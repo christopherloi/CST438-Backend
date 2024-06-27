@@ -3,6 +3,9 @@ package com.cst438.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+
+import java.util.List;
 
 @Entity
 public class Course {
@@ -11,6 +14,8 @@ public class Course {
     private String courseId;
     private String title;
     private int credits;
+    @OneToMany(mappedBy="course")
+    List<Section> sections;
 
      public String getTitle() {
         return title;
