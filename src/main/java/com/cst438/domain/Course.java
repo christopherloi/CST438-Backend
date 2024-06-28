@@ -17,7 +17,7 @@ public class Course {
     @OneToMany(mappedBy="course")
     List<Section> sections;
 
-     public String getTitle() {
+    public String getTitle() {
         return title;
     }
     public void setTitle(String title) {

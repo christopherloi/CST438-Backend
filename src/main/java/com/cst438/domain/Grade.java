@@ -8,6 +8,24 @@ public class Grade {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="grade_id")
     private int gradeId;
+    @ManyToOne
+    @JoinColumn(name="assignment_id", nullable=false)
+    private Assignment assignment;
+    @ManyToOne
+    @JoinColumn(name="enrollment_id", nullable=false)
+    private Enrollment enrollment;
+    private int assignmentId;
+    private int enrollmentId;
+    private int score;
+
+    public int getGradeId() {return gradeId;}
+    public void setGradeId(int gradeId) {this.gradeId = gradeId;}
+    public int getAssignmentId() {return assignmentId;}
+    public void setAssignmentId(int assignmentId) {this.assignmentId = assignmentId;}
+    public int getEnrollmentId() {return enrollmentId;}
+    public void setEnrollmentId(int enrollmentId) {this.enrollmentId = enrollmentId;}
+    public int getScore() {return score;}
+    public void setScore(Integer score) {this.score = score;}
  
     // TODO complete this class
     // add additional attribute for score

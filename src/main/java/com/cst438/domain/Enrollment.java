@@ -8,6 +8,18 @@ public class Enrollment {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="enrollment_id")
     int enrollmentId;
+    @ManyToOne
+    @JoinColumn(name="section_no", nullable=false)
+    private Section section;
+    @ManyToOne
+    @JoinColumn(name="id", nullable=false)
+    private User student;
+    private int userId;
+
+    public int getEnrollmentId() {return enrollmentId;}
+    public void setEnrollmentId(int enrollmentId) {this.enrollmentId = enrollmentId;}
+    public int getUserId() {return userId;}
+    public void setUserId(int userId) {this.userId = userId;}
 	
 	// TODO complete this class
     // add additional attribute for grade

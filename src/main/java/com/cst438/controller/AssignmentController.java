@@ -3,6 +3,7 @@ package com.cst438.controller;
 import com.cst438.domain.*;
 import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
+import com.cst438.dto.CourseDTO;
 import com.cst438.dto.GradeDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,17 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class AssignmentController {
 
+    @Autowired
+    AssignmentRepository assignmentRepository;
+    @Autowired
+    SectionRepository sectionRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+    @Autowired
+    GradeRepository gradeRepository;
+
 
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
@@ -29,12 +41,24 @@ public class AssignmentController {
             @PathVariable("secNo") int secNo) {
 
         // TODO remove the following line when done
-		
-		// hint: use the assignment repository method 
+
+		// hint: use the assignment repository method
 		//  findBySectionNoOrderByDueDate to return 
 		//  a list of assignments
+        User user = new User();
+        String userType = user.getType();
 
-        return null;
+        if (!userType.equals("INSTRUCTOR")) {
+            throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "must be an instructor to access");
+        } else {
+            List<Assignment> assignments = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
+            List<AssignmentDTO> dto_list = new ArrayList<>();
+            for (Assignment a : assignments) {
+                dto_list.add(new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDate(), a.getCourseId(), a.getSection().getSecId(), a.getSection().getSectionNo()));
+            }
+
+            return dto_list;
+        }
     }
 
     // add assignment
@@ -45,8 +69,35 @@ public class AssignmentController {
             @RequestBody AssignmentDTO dto) {
 
         // TODO remove the following line when done
+        Assignment a1 = assignmentRepository.findById(dto.id()).orElse(null);
+        int secNo = a1.getSecNo();
+        Section s = sectionRepository.findById(secNo).orElse(null);
+        String instructorEmail = s.getInstructorEmail();
 
-        return null;
+        User instructor = userRepository.findByEmail(instructorEmail);
+        String userType = instructor.getType();
+
+        if (!userType.equals("INSTRUCTOR") || instructor == null) {
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Must be an instructor to access");
+        }
+
+        Assignment a = new Assignment();
+        a.setAssignmentId(dto.id());
+        a.setTitle(dto.title());
+        a.setDate(dto.dueDate());
+        a.setSecNo(dto.secNo());
+//        a.setCourseId(dto.courseId());
+//        a.setSecId(dto.secId());
+
+        assignmentRepository.save(a);
+        return new AssignmentDTO(
+                a.getAssignmentId(),
+                a.getTitle(),
+                a.getDate(),
+                a.getCourseId(),
+                a.getSection().getSecId(),
+                a.getSection().getSectionNo()
+        );
     }
 
     // update assignment for a section.  Only title and dueDate may be changed.
@@ -56,8 +107,26 @@ public class AssignmentController {
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
 
         // TODO remove the following line when done
+        Assignment a = assignmentRepository.findById(dto.id()).orElse(null);
 
-        return null;
+        if (a == null) {
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found " + dto.id());
+        }
+
+        a.setAssignmentId(dto.id());
+        a.setTitle(dto.title());
+        a.setDate(dto.dueDate());
+        a.setSecNo(dto.secNo());
+
+        assignmentRepository.save(a);
+        return new AssignmentDTO(
+                a.getAssignmentId(),
+                a.getTitle(),
+                a.getDate(),
+                a.getCourseId(),
+                a.getSection().getSecId(),
+                a.getSection().getSectionNo()
+        );
     }
 
     // delete assignment for a section
@@ -66,6 +135,21 @@ public class AssignmentController {
     public void deleteAssignment(@PathVariable("assignmentId") int assignmentId) {
 
         // TODO
+        Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
+        int secNo = a.getSecNo();
+        Section s = sectionRepository.findById(secNo).orElse(null);
+        String instructorEmail = s.getInstructorEmail();
+
+        User instructor = userRepository.findByEmail(instructorEmail);
+        String userType = instructor.getType();
+
+        if (!userType.equals("INSTRUCTOR") || instructor == null) {
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Must be an instructor to access");
+        }
+
+        if (a != null) {
+            assignmentRepository.delete(a);
+        }
     }
 
     // instructor gets grades for assignment ordered by student name
@@ -76,13 +160,46 @@ public class AssignmentController {
         // TODO remove the following line when done
 
         // get the list of enrollments for the section related to this assignment.
-		// hint: use te enrollment repository method findEnrollmentsBySectionOrderByStudentName.
+		// hint: use the enrollment repository method findEnrollmentsBySectionOrderByStudentName.
         // for each enrollment, get the grade related to the assignment and enrollment
 		//   hint: use the gradeRepository findByEnrollmentIdAndAssignmentId method.
         //   if the grade does not exist, create a grade entity and set the score to NULL
         //   and then save the new entity
+        Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
+        int secNo = a.getSecNo();
+        Section s = sectionRepository.findById(secNo).orElse(null);
+        String instructorEmail = s.getInstructorEmail();
 
-        return null;
+        User instructor = userRepository.findByEmail(instructorEmail);
+        String userType = instructor.getType();
+
+        if (!userType.equals("INSTRUCTOR") || instructor == null) {
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Must be an instructor to access");
+        }
+
+        Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
+        List<AssignmentDTO> dto_list = new ArrayList<>();
+
+        int secNo1 = assignment.getSecNo();
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(secNo1);
+        List<GradeDTO> grade_dto_list = new ArrayList<>();
+
+        for (Enrollment e : enrollments) {
+            User user = userRepository.findById(e.getUserId()).orElse(null);
+            int enrollmentId = e.getEnrollmentId();
+            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollmentId, assignmentId);
+
+            if (grade == null) {
+                Grade newGrade = new Grade();
+                newGrade.setScore(null);
+                gradeRepository.save(newGrade);
+                grade_dto_list.add(new GradeDTO(newGrade.getGradeId(), user.getName(), user.getEmail(), assignment.getTitle(), s.getCourse().getCourseId(), s.getSecId(), newGrade.getScore()));
+            } else {
+                grade_dto_list.add(new GradeDTO(grade.getGradeId(), user.getName(), user.getEmail(), assignment.getTitle(), s.getCourse().getCourseId(), s.getSecId(), grade.getScore()));
+            }
+        }
+
+        return grade_dto_list;
     }
 
     // instructor uploads grades for assignment
