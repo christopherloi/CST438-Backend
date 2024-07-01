@@ -9,32 +9,59 @@ public class Enrollment {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="enrollment_id")
-    int enrollmentId;
+    private int enrollmentId;
+
     @ManyToOne
     @JoinColumn(name="section_no", nullable=false)
     private Section section;
+
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
     private User student;
+
     @OneToMany(mappedBy="enrollment")
     private List<Grade> grades;
-    @Column(name="user_id", insertable=false, updatable=false)
-    private int userId;
-    @Column(name="section_no", insertable=false, updatable=false)
-    private int secNo;
-    @Column(name="grade")
-    private String grade;
 
-    public int getEnrollmentId() {return enrollmentId;}
-    public void setEnrollmentId(int enrollmentId) {this.enrollmentId = enrollmentId;}
-    public int getUserId() {return userId;}
-    public void setUserId(int userId) {this.userId = userId;}
-    public Section getSection() {return section;}
-    public User getStudent() {return student;}
-	
-	// TODO complete this class
-    // add additional attribute for grade
-    // create relationship between enrollment and user entities
-    // create relationship between enrollment and section entities
-    // add getter/setter methods
+    @Column(name="grade")
+    private String finalGrade;
+
+    public int getEnrollmentId() {
+        return enrollmentId;
+    }
+
+    public void setEnrollmentId(int enrollmentId) {
+        this.enrollmentId = enrollmentId;
+    }
+
+    public Section getSection() {
+        return section;
+    }
+
+    public void setSection(Section section) {
+        this.section = section;
+    }
+
+    public User getStudent() {
+        return student;
+    }
+
+    public void setStudent(User student) {
+        this.student = student;
+    }
+
+    public List<Grade> getGrades() {
+        return grades;
+    }
+
+    public void setGrades(List<Grade> grades) {
+        this.grades = grades;
+    }
+
+    public String getFinalGrade() {
+        return finalGrade;
+    }
+
+    public void setFinalGrade(String finalGrade) {
+        this.finalGrade = finalGrade;
+    }
 }
