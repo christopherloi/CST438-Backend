@@ -54,7 +54,7 @@ public class EnrollmentController {
                 enrollment.getStudent().getEmail(),
                 enrollment.getSection().getCourse().getCourseId(),
                 enrollment.getSection().getCourse().getTitle(),
-                enrollment.getSection().getSectionId(),
+                enrollment.getSection().getSecId(),
                 enrollment.getSection().getSectionNo(),
                 enrollment.getSection().getBuilding(),
                 enrollment.getSection().getRoom(),

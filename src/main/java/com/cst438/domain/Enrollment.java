@@ -25,6 +25,11 @@ public class Enrollment {
     @Column(name="grade")
     private String finalGrade;
 
+    @Column(name="user_id", insertable=false, updatable=false)
+    private int userId;
+    @Column(name="section_no", insertable=false, updatable=false)
+    private int secNo;
+
     public int getEnrollmentId() {
         return enrollmentId;
     }
@@ -64,4 +69,8 @@ public class Enrollment {
     public void setFinalGrade(String finalGrade) {
         this.finalGrade = finalGrade;
     }
+
+    public int getUserId() {return userId;}
+
+    public void setUserId(int userId) {this.userId = userId;}
 }
