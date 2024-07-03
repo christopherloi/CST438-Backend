@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.sql.Date;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 public class Term {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="term_id")
     private int termId;
     @Column(name="tyear")
@@ -92,5 +94,12 @@ public class Term {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+    public List<Section> getSections() {
+        return sections;
+    }
+
+    public void setSections(List<Section> sections) {
+        this.sections = sections;
     }
 }

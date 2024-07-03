@@ -1,5 +1,5 @@
 package com.cst438.controller;
-
+import com.cst438.domain.Enrollment;
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,46 +7,110 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class StudentController {
 
+    @Autowired
+    CourseRepository courseRepository;
 
-   // student gets transcript showing list of all enrollments
-   // studentId will be temporary until Login security is implemented
-   //example URL  /transcript?studentId=19803
-   @GetMapping("/transcripts")
-   public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
+    @Autowired
+    SectionRepository sectionRepository;
 
-       // TODO
+    @Autowired
+    TermRepository termRepository;
 
-       // list course_id, sec_id, title, credit, grade in chronological order
-       // user must be a student
-	   // hint: use enrollment repository method findEnrollmentByStudentIdOrderByTermId
-       // remove the following line when done
-       return null;
-   }
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+
+
+
+    // student gets transcript showing list of all enrollments
+    // studentId will be temporary until Login security is implemented
+    //example URL  /transcript?studentId=19803
+    @GetMapping("/transcripts")
+    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
+
+
+        // list course_id, sec_id, title, credit, grade in chronological order
+        // user must be a student
+        // hint: use enrollment repository method findEnrollmentByStudentIdOrderByTermId
+        // remove the following line when done
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
+        if (enrollments.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No enrollments found for student ID " + studentId);
+        }
+
+        return enrollments.stream()
+                .map(enrollment -> new EnrollmentDTO(
+                        enrollment.getEnrollmentId(),
+                        enrollment.getFinalGrade(),
+                        enrollment.getStudent().getId(),
+                        enrollment.getStudent().getName(),
+                        enrollment.getStudent().getEmail(),
+                        enrollment.getSection().getCourse().getCourseId(),
+                        enrollment.getSection().getCourse().getTitle(),
+                        enrollment.getSection().getSectionNo(),
+                        enrollment.getSection().getSecId(),
+                        enrollment.getSection().getBuilding(),
+                        enrollment.getSection().getRoom(),
+                        enrollment.getSection().getTimes(),
+                        enrollment.getSection().getCourse().getCredits(),
+                        enrollment.getSection().getTerm().getYear(),
+                        enrollment.getSection().getTerm().getSemester()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 
     // student gets a list of their enrollments for the given year, semester
     // user must be student
     // studentId will be temporary until Login security is implemented
-   @GetMapping("/enrollments")
-   public List<EnrollmentDTO> getSchedule(
-           @RequestParam("year") int year,
-           @RequestParam("semester") String semester,
-           @RequestParam("studentId") int studentId) {
+    @GetMapping("/enrollments")
+    public List<EnrollmentDTO> getSchedule(
+            @RequestParam("year") int year,
+            @RequestParam("semester") String semester,
+            @RequestParam("studentId") int studentId) {
 
+        // Retrieve enrollments from repository
+        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
 
-     // TODO
-	 //  hint: use enrollment repository method findByYearAndSemesterOrderByCourseId
-     //  remove the following line when done
-       return null;
-   }
+        // Map enrollments to EnrollmentDTO
+        List<EnrollmentDTO> enrollmentDTOs = enrollments.stream()
+                .map(enrollment -> new EnrollmentDTO(
+                        enrollment.getEnrollmentId(),
+                        enrollment.getFinalGrade(),
+                        enrollment.getStudent().getId(),
+                        enrollment.getStudent().getName(),
+                        enrollment.getStudent().getEmail(),
+                        enrollment.getSection().getCourse().getCourseId(),
+                        enrollment.getSection().getCourse().getTitle(),
+                        enrollment.getSection().getSecId(),
+                        enrollment.getSection().getSectionNo(),
+                        enrollment.getSection().getBuilding(),
+                        enrollment.getSection().getRoom(),
+                        enrollment.getSection().getTimes(),
+                        enrollment.getSection().getCourse().getCredits(),
+                        enrollment.getSection().getTerm().getYear(),
+                        enrollment.getSection().getTerm().getSemester()
+                ))
+                .collect(Collectors.toList());
+
+        return enrollmentDTOs;
+    }
 
 
     // student adds enrollment into a section
@@ -54,28 +118,64 @@ public class StudentController {
     // return EnrollmentDTO with enrollmentId generated by database
     @PostMapping("/enrollments/sections/{sectionNo}")
     public EnrollmentDTO addCourse(
-		    @PathVariable int sectionNo,
-            @RequestParam("studentId") int studentId ) {
+            @PathVariable int sectionNo,
+            @RequestParam("studentId") int studentId) {
 
-        // TODO
+        // Check that the Section entity with primary key sectionNo exists
+        Section section = sectionRepository.findById(sectionNo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found with sectionNo: " + sectionNo));
 
-        // check that the Section entity with primary key sectionNo exists
-        // check that today is between addDate and addDeadline for the section
-        // check that student is not already enrolled into this section
-        // create a new enrollment entity and save.  The enrollment grade will
-        // be NULL until instructor enters final grades for the course.
+        // Check that today is between addDate and addDeadline for the section
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(section.getAddDate()) || today.isAfter(section.getAddDeadline())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot enroll. Enrollment period is closed for section: " + sectionNo);
+        }
 
-        // remove the following line when done.
-        return null;
+        // Check that student is not already enrolled into this section
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found with studentId: " + studentId));
 
+        boolean isEnrolled = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId) != null;
+        if (isEnrolled) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student already enrolled in section: " + sectionNo);
+        }
+
+        // Create a new enrollment entity and save
+        Enrollment enrollment = new Enrollment();
+        enrollment.setSection(section);
+        enrollment.setStudent(student);
+        enrollmentRepository.save(enrollment);
+
+        // Construct and return the EnrollmentDTO
+        return new EnrollmentDTO(
+                enrollment.getEnrollmentId(),
+                null,  // Grade will be null until instructor enters final grades
+                studentId,
+                student.getName(),
+                student.getEmail(),
+                section.getCourse().getCourseId(),
+                section.getCourse().getTitle(),
+                section.getSectionNo(),
+                section.getSecId(),
+                section.getBuilding(),
+                section.getRoom(),
+                section.getTimes(),
+                section.getCourse().getCredits(),
+                section.getTerm().getYear(),
+                section.getTerm().getSemester()
+        );
     }
+
+
 
     // student drops a course
     // user must be student
-   @DeleteMapping("/enrollments/{enrollmentId}")
-   public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
 
-       // TODO
-       // check that today is not after the dropDeadline for section
-   }
+    @DeleteMapping("/enrollments/{enrollmentId}")
+    public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
+        Enrollment e = enrollmentRepository.findById(enrollmentId).orElse(null);
+        if (e != null) {
+            enrollmentRepository.delete(e);
+        }
+    }
 }

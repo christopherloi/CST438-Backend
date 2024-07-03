@@ -3,6 +3,7 @@ package com.cst438.domain;
 import jakarta.persistence.*;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -34,7 +35,12 @@ public class Section {
     @Column(name="term_id", insertable=false, updatable=false)
     private int termId;
 
-    // TODO  uncomment the following lines
+    @Column(name = "add_date")
+    private LocalDate addDate;
+
+    @Column(name = "add_deadline")
+    private LocalDate addDeadline;
+
 
     @OneToMany(mappedBy="section")
     List<Enrollment> enrollments;
@@ -109,4 +115,19 @@ public class Section {
     public List<Enrollment> getEnrollments() { return enrollments; }
 
     public List<Assignment> getAssignments() { return assignments; }
+    public LocalDate getAddDate() {
+        return addDate;
+    }
+
+    public void setAddDate(LocalDate addDate) {
+        this.addDate = addDate;
+    }
+
+    public LocalDate getAddDeadline() {
+        return addDeadline;
+    }
+
+    public void setAddDeadline(LocalDate addDeadline) {
+        this.addDeadline = addDeadline;
+    }
 }

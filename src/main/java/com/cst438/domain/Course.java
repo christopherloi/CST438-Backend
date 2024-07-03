@@ -4,19 +4,23 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
 public class Course {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="course_id")
     private String courseId;
+    @Column(name = "title")
     private String title;
+    @Column(name = "credits")
     private int credits;
-    @OneToMany(mappedBy="course")
-    List<Section> sections;
 
+    @OneToMany(mappedBy = "course")
+    private List<Section> sections;
     public String getTitle() {
         return title;
     }
@@ -35,5 +39,10 @@ public class Course {
     public void setCourseId(String courseId) {
         this.courseId = courseId;
     }
-
+    public List<Section> getSections() {
+        return sections;
+    }
+    public void setSections(List<Section> sections) {
+        this.sections = sections;
+    }
 }
