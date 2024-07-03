@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+
 @CrossOrigin(origins = "http://localhost:3000")
 public class StudentController {
 
@@ -86,30 +86,30 @@ public class StudentController {
             @RequestParam("studentId") int studentId) {
 
         // Retrieve enrollments from repository
-        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
-
+        List<Enrollment> enrollment = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
+        List<EnrollmentDTO> enrollmentDTO_List = new ArrayList<>();
         // Map enrollments to EnrollmentDTO
-        List<EnrollmentDTO> enrollmentDTOs = enrollments.stream()
-                .map(enrollment -> new EnrollmentDTO(
-                        enrollment.getEnrollmentId(),
-                        enrollment.getFinalGrade(),
-                        enrollment.getStudent().getId(),
-                        enrollment.getStudent().getName(),
-                        enrollment.getStudent().getEmail(),
-                        enrollment.getSection().getCourse().getCourseId(),
-                        enrollment.getSection().getCourse().getTitle(),
-                        enrollment.getSection().getSecId(),
-                        enrollment.getSection().getSectionNo(),
-                        enrollment.getSection().getBuilding(),
-                        enrollment.getSection().getRoom(),
-                        enrollment.getSection().getTimes(),
-                        enrollment.getSection().getCourse().getCredits(),
-                        enrollment.getSection().getTerm().getYear(),
-                        enrollment.getSection().getTerm().getSemester()
-                ))
-                .collect(Collectors.toList());
+        for(Enrollment e: enrollment){
+            enrollmentDTO_List.add(new EnrollmentDTO( e.getEnrollmentId(),
+                    e.getFinalGrade(),
+                    e.getStudent().getId(),
+                    e.getStudent().getName(),
+                    e.getStudent().getEmail(),
+                    e.getSection().getCourse().getCourseId(),
+                    e.getSection().getCourse().getTitle(),
+                    e.getSection().getSecId(),
+                    e.getSection().getSectionNo(),
+                    e.getSection().getBuilding(),
+                    e.getSection().getRoom(),
+                    e.getSection().getTimes(),
+                    e.getSection().getCourse().getCredits(),
+                    e.getSection().getTerm().getYear(),
+                    e.getSection().getTerm().getSemester()
+            ));
 
-        return enrollmentDTOs;
+        }
+        return enrollmentDTO_List;
+
     }
 
 
