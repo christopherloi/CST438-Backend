@@ -35,11 +35,11 @@ public class Section {
     @Column(name="term_id", insertable=false, updatable=false)
     private int termId;
 
-    @Column(name = "add_date")
-    private LocalDate addDate;
-
-    @Column(name = "add_deadline")
-    private LocalDate addDeadline;
+//    @Column(name = "add_date")
+//    private LocalDate addDate;
+//
+//    @Column(name = "add_deadline")
+//    private LocalDate addDeadline;
 
 
     @OneToMany(mappedBy="section")
@@ -115,19 +115,19 @@ public class Section {
     public List<Enrollment> getEnrollments() { return enrollments; }
 
     public List<Assignment> getAssignments() { return assignments; }
-    public LocalDate getAddDate() {
-        return addDate;
-    }
-
-    public void setAddDate(LocalDate addDate) {
-        this.addDate = addDate;
-    }
-
-    public LocalDate getAddDeadline() {
-        return addDeadline;
-    }
-
-    public void setAddDeadline(LocalDate addDeadline) {
-        this.addDeadline = addDeadline;
-    }
+//    public LocalDate getAddDate() {
+//        return addDate;
+//    }
+//
+//    public void setAddDate(LocalDate addDate) {
+//        this.addDate = addDate;
+//    }
+//
+//    public LocalDate getAddDeadline() {
+//        return addDeadline;
+//    }
+//
+//    public void setAddDeadline(LocalDate addDeadline) {
+//        this.addDeadline = addDeadline;
+//    }
 }

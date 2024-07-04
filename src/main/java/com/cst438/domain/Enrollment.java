@@ -73,4 +73,8 @@ public class Enrollment {
     public int getUserId() {return userId;}
 
     public void setUserId(int userId) {this.userId = userId;}
+
+    public int getSecNo() {return secNo;}
+
+    public void setSecNo(int secNo) {this.secNo = secNo;}
 }

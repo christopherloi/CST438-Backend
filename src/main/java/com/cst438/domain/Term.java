@@ -17,17 +17,17 @@ public class Term {
     private int termId;
     @Column(name="tyear")
     private int year;
+    @Column(name="semester")
     private String semester;
-
-    @Column(name="add_date")
+    @Column(name="addDate")
     private Date addDate;
-    @Column(name="add_deadline")
+    @Column(name="addDeadline")
     private Date addDeadline;
-    @Column(name="drop_deadline")
+    @Column(name="dropDeadline")
     private Date dropDeadline;
-    @Column(name="start_date")
+    @Column(name="startDate")
     private Date startDate;
-    @Column(name="end_date")
+    @Column(name="endDate")
     private Date endDate;
     @OneToMany(mappedBy="term")
     List<Section> sections;
