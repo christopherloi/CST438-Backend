@@ -123,6 +123,11 @@ public class StudentController {
     public EnrollmentDTO addCourse(
             @PathVariable int sectionNo,
             @RequestParam("studentId") int studentId) {
+        // check that the Section entity with primary key sectionNo exists
+        // check that today is between addDate and addDeadline for the section
+        // check that student is not already enrolled into this section
+        // create a new enrollment entity and save.  The enrollment grade will
+        // be NULL until instructor enters final grades for the course.
 
         // Check that the Section entity with primary key sectionNo exists
         Section section = sectionRepository.findById(sectionNo)
