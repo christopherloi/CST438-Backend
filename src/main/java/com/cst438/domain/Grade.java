@@ -27,7 +27,7 @@ public class Grade {
     public void setAssignmentId(int assignmentId) {this.assignmentId = assignmentId;}
     public int getEnrollmentId() {return enrollmentId;}
     public void setEnrollmentId(int enrollmentId) {this.enrollmentId = enrollmentId;}
-    public int getScore() {return score;}
+    public Integer getScore() {return score;}
     public void setScore(Integer score) {this.score = score;}
  
     // TODO complete this class

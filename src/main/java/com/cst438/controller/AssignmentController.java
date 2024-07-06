@@ -340,11 +340,12 @@ public class AssignmentController {
 
             Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollment_id, a.getAssignmentId());
 
-            if (grade == null) {
-                continue;
+
+            Integer score = null;
+            if (grade != null) {
+                score = grade.getScore();
             }
 
-            int score = grade.getScore();
             assignmentGrade_list.add(new AssignmentStudentDTO(a.getAssignmentId(), a.getTitle(), date, a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), score));
 //            assignmentGrade_list.add(new AssignmentStudentDTO(a.getAssignmentId(), a.getTitle(), date, a.getSection().getSecId(), grade));
         }
