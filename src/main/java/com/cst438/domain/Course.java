@@ -11,7 +11,6 @@ import java.util.List;
 @Entity
 public class Course {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="course_id")
     private String courseId;
     @Column(name = "title")

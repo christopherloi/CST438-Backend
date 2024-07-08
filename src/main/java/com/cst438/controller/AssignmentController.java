@@ -50,11 +50,6 @@ public class AssignmentController {
     @GetMapping("/sections/{secNo}/assignments")
     public List<AssignmentDTO> getAssignments(@PathVariable("secNo") int secNo) {
 
-        // TODO remove the following line when done
-
-		// hint: use the assignment repository method
-		//  findBySectionNoOrderByDueDate to return 
-		//  a list of assignments
 //        Section s = sectionRepository.findById(secNo).orElse(null);
 //        String instructorEmail = s.getInstructorEmail();
 //        User user = userRepository.findByEmail(instructorEmail);
@@ -71,24 +66,17 @@ public class AssignmentController {
 //
 //            return dto_list;
 //        }
-        List<Assignment> assignments = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
-
-        if (assignments == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assignments not found.");
-        }
-
         Section section = sectionRepository.findById(secNo).orElse(null);
 
         if (section == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found: " + secNo);
         }
 
+        List<Assignment> assignments = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
+
         List<AssignmentDTO> dto_list = new ArrayList<>();
-//        for (Assignment a : assignments) {
-//            dto_list.add(new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDate(), a.getCourseId(), a.getSecId(), a.getSecNo()));
-//        }
         for (Assignment a : assignments) {
-            dto_list.add(new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDate(), a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), a.getSection().getSectionNo()));
+            dto_list.add(new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDueDateAsString(), a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), a.getSection().getSectionNo()));
         }
 
         return dto_list;
@@ -100,7 +88,6 @@ public class AssignmentController {
     @PostMapping("/assignments")
     public AssignmentDTO createAssignment(@RequestBody AssignmentDTO dto) {
 
-        // TODO remove the following line when done
 //        Assignment a1 = assignmentRepository.findById(dto.id()).orElse(null);
 //        int secNo = a1.getSecNo();
 //        Section s = sectionRepository.findById(secNo).orElse(null);
@@ -125,17 +112,15 @@ public class AssignmentController {
         }
 
         Assignment a = new Assignment();
-        a.setAssignmentId(dto.id());
         a.setTitle(dto.title());
-        a.setDate(dto.dueDate());
+        a.setDueDateAsString(dto.dueDate());
         a.setSection(section);
-        a.getSection().setCourse(course);
 
         assignmentRepository.save(a);
         return new AssignmentDTO(
                 a.getAssignmentId(),
                 a.getTitle(),
-                a.getDate(),
+                a.getDueDateAsString(),
                 a.getSection().getCourse().getCourseId(),
                 a.getSection().getSecId(),
                 a.getSection().getSectionNo()
@@ -148,7 +133,6 @@ public class AssignmentController {
     @PutMapping("/assignments")
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
 
-        // TODO remove the following line when done
         Assignment a = assignmentRepository.findById(dto.id()).orElse(null);
 
         if (a == null) {
@@ -177,17 +161,14 @@ public class AssignmentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course not found: " + dto.courseId());
         }
 
-        a.setAssignmentId(dto.id());
         a.setTitle(dto.title());
-        a.setDate(dto.dueDate());
-        a.setSection(section);
-        a.getSection().setCourse(course);
+        a.setDueDateAsString(dto.dueDate());
 
         assignmentRepository.save(a);
         return new AssignmentDTO(
                 a.getAssignmentId(),
                 a.getTitle(),
-                a.getDate(),
+                a.getDueDateAsString(),
                 a.getSection().getCourse().getCourseId(),
                 a.getSection().getSecId(),
                 a.getSection().getSectionNo()
@@ -199,7 +180,6 @@ public class AssignmentController {
     @DeleteMapping("/assignments/{assignmentId}")
     public void deleteAssignment(@PathVariable("assignmentId") int assignmentId) {
 
-        // TODO
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
 //        int secNo = a.getSecNo();
 //        Section s = sectionRepository.findById(secNo).orElse(null);
@@ -222,14 +202,6 @@ public class AssignmentController {
     @GetMapping("/assignments/{assignmentId}/grades")
     public List<GradeDTO> getAssignmentGrades(@PathVariable("assignmentId") int assignmentId) {
 
-        // TODO remove the following line when done
-
-        // get the list of enrollments for the section related to this assignment.
-		// hint: use the enrollment repository method findEnrollmentsBySectionOrderByStudentName.
-        // for each enrollment, get the grade related to the assignment and enrollment
-		//   hint: use the gradeRepository findByEnrollmentIdAndAssignmentId method.
-        //   if the grade does not exist, create a grade entity and set the score to NULL
-        //   and then save the new entity
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
 
         if (a == null) {
@@ -283,13 +255,14 @@ public class AssignmentController {
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
 
-        // TODO
-
-        // for each grade in the GradeDTO list, retrieve the grade entity
-        // update the score and save the entity
         for (GradeDTO g : dlist) {
             int gradeId = g.gradeId();
             Grade grade = gradeRepository.findById(gradeId).orElse(null);
+
+            if (grade == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grade not found. Cannot be updated.");
+            }
+
             grade.setScore(g.score());
             gradeRepository.save(grade);
         }
@@ -306,11 +279,6 @@ public class AssignmentController {
             @RequestParam("year") int year,
             @RequestParam("semester") String semester) {
 
-        // TODO remove the following line when done
-
-        // return a list of assignments and (if they exist) the assignment grade
-        //  for all sections that the student is enrolled for the given year and semester
-		//  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
 //        User student = userRepository.findById(studentId).orElse(null);
 //        String userType = student.getType();
 //        List<Enrollment> studentEnrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
@@ -328,26 +296,23 @@ public class AssignmentController {
         List<Assignment> assignment_list = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
 
         for (Assignment a : assignment_list) {
-            int enrollment_id = a.getSection().getEnrollments().get(0).getEnrollmentId();
-            System.out.println("enrollment_id: " + enrollment_id);
-            System.out.println("assignment_id: " + a.getAssignmentId());
-            String date_string = a.getDate();
-            Date date = java.sql.Date.valueOf(date_string);
-//            System.out.println("date_string: "  + date_string);
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
-//            LocalDate local_date = LocalDate.parse(date_string, formatter);
-//            Date date = (Date) Date.from(local_date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollment_id, a.getAssignmentId());
-
-
-            Integer score = null;
-            if (grade != null) {
-                score = grade.getScore();
+            Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(a.getSection().getSectionNo(), studentId);
+            if (e==null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found. studentId: "+ studentId +" sectionNo: "+ a.getSection().getSectionNo());
             }
 
-            assignmentGrade_list.add(new AssignmentStudentDTO(a.getAssignmentId(), a.getTitle(), date, a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), score));
-//            assignmentGrade_list.add(new AssignmentStudentDTO(a.getAssignmentId(), a.getTitle(), date, a.getSection().getSecId(), grade));
+            Date date = a.getDate();
+
+            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), a.getAssignmentId());
+
+
+            assignmentGrade_list.add(new AssignmentStudentDTO(
+                    a.getAssignmentId(),
+                    a.getTitle(),
+                    date,
+                    a.getSection().getCourse().getCourseId(),
+                    a.getSection().getSecId(),
+                    (grade!=null)? grade.getScore(): null ));
         }
 
         return assignmentGrade_list;

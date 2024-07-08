@@ -15,7 +15,7 @@ public class Assignment {
     @Column(name="title")
     private String title;
     @Column(name="due_date")
-    private String dueDate;
+    private Date dueDate;
 //    @Column(name="course_id")
 //    private String courseId;
 //    private int secId;
@@ -31,8 +31,22 @@ public class Assignment {
     public void setAssignmentId(int assignmentId) {this.assignmentId = assignmentId;}
     public String getTitle() {return title;}
     public void setTitle(String title) {this.title = title;}
-    public String getDate() {return dueDate;}
-    public void setDate(String dueDate) {this.dueDate = dueDate;}
+    public Date getDate() {return dueDate;}
+    public String getDueDateAsString() {
+        if (this.dueDate!=null) {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            return f.format(this.dueDate);
+        } else {
+            return null;
+        }
+    }
+    public void setDate(Date dueDate) {this.dueDate = dueDate;}
+    public void setDueDateAsString(String dueDate) {
+        if (dueDate!=null)
+            this.dueDate = Date.valueOf(dueDate);
+        else
+            this.dueDate=null;
+    }
 //    public String getCourseId() {return courseId;}
 //    public void setCourseId(String courseId) {this.courseId = courseId;}
 //    public int getSecId() {return secId;}

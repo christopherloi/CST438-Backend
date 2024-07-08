@@ -13,7 +13,7 @@ public class Grade {
     @Column(name="enrollment_id", insertable=false, updatable=false)
     private int enrollmentId;
     @Column(name="score")
-    private int score;
+    private Integer score;
     @ManyToOne
     @JoinColumn(name="assignment_id", nullable=false)
     private Assignment assignment;
