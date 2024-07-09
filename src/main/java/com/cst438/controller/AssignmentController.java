@@ -105,11 +105,11 @@ public class AssignmentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found: " + dto.secNo());
         }
 
-        Course course = courseRepository.findById(dto.courseId()).orElse(null);
+//        Course course = courseRepository.findById(dto.courseId()).orElse(null);
 
-        if (course == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course not found: " + dto.courseId());
-        }
+//        if (course == null) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course not found: " + dto.courseId());
+//        }
 
         Assignment a = new Assignment();
         a.setTitle(dto.title());
