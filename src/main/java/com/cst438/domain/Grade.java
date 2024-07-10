@@ -29,6 +29,10 @@ public class Grade {
     public void setEnrollmentId(int enrollmentId) {this.enrollmentId = enrollmentId;}
     public Integer getScore() {return score;}
     public void setScore(Integer score) {this.score = score;}
+    public Assignment getAssignment() {return assignment;}
+    public void setAssignment(Assignment assignment) {this.assignment = assignment;}
+    public Enrollment getEnrollment() {return enrollment;}
+    public void setEnrollment(Enrollment enrollment) {this.enrollment = enrollment;}
  
     // TODO complete this class
     // add additional attribute for score

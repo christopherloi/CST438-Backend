@@ -208,12 +208,12 @@ public class AssignmentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assignment not found: " + assignmentId);
         }
 
-        int secNo = a.getSection().getSectionNo();
-        Section s = sectionRepository.findById(secNo).orElse(null);
-
-        if (s == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found: " + secNo);
-        }
+//        int secNo = a.getSection().getSectionNo();
+//        Section s = sectionRepository.findById(secNo).orElse(null);
+//
+//        if (s == null) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found: " + secNo);
+//        }
 //        String instructorEmail = s.getInstructorEmail();
 //
 //        User instructor = userRepository.findByEmail(instructorEmail);
@@ -223,30 +223,31 @@ public class AssignmentController {
 //            throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Must be an instructor to access");
 //        }
 
+        List<GradeDTO> grade_dto_list = new ArrayList<>();
         int secNo1 = a.getSection().getSectionNo();
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(secNo1);
 
-        if (enrollments == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollments not found.");
-        }
-
-        List<GradeDTO> grade_dto_list = new ArrayList<>();
-
         for (Enrollment e : enrollments) {
-            User user = userRepository.findById(e.getUserId()).orElse(null);
+//            User user = userRepository.findById(e.getUserId()).orElse(null);
             int enrollmentId = e.getEnrollmentId();
-            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollmentId, assignmentId);
+            Grade g = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollmentId, a.getAssignmentId());
 
-            if (grade == null) {
-                Grade newGrade = new Grade();
-                newGrade.setScore(null);
-                gradeRepository.save(newGrade);
-                grade_dto_list.add(new GradeDTO(newGrade.getGradeId(), user.getName(), user.getEmail(), a.getTitle(), s.getCourse().getCourseId(), s.getSecId(), newGrade.getScore()));
+            if (g == null) {
+                g = new Grade();
+                g.setAssignment(a);
+                g.setEnrollment(e);
+                gradeRepository.save(g);
             } else {
-                grade_dto_list.add(new GradeDTO(grade.getGradeId(), user.getName(), user.getEmail(), a.getTitle(), s.getCourse().getCourseId(), s.getSecId(), grade.getScore()));
+                grade_dto_list.add(new GradeDTO(
+                        g.getGradeId(),
+                        e.getStudent().getName(),
+                        e.getStudent().getEmail(),
+                        a.getTitle(),
+                        a.getSection().getCourse().getCourseId(),
+                        a.getSection().getSecId(),
+                        g.getScore()));
             }
         }
-
         return grade_dto_list;
     }
 
