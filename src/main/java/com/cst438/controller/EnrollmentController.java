@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,12 +23,28 @@ public class EnrollmentController {
     // user must be instructor for the section
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(@PathVariable("sectionNo") int sectionNo) {
-        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
-        if (enrollments == null || enrollments.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No enrollments found for section number: " + sectionNo);
+        List<Enrollment> enrollments = enrollmentRepository
+                .findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
+        List<EnrollmentDTO> dlist = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            dlist.add(new EnrollmentDTO(
+                    e.getEnrollmentId(),
+                    e.getFinalGrade(),
+                    e.getStudent().getId(),
+                    e.getStudent().getName(),
+                    e.getStudent().getEmail(),
+                    e.getSection().getCourse().getCourseId(),
+                    e.getSection().getCourse().getTitle(),
+                    e.getSection().getSecId(),
+                    e.getSection().getSectionNo(),
+                    e.getSection().getBuilding(),
+                    e.getSection().getRoom(),
+                    e.getSection().getTimes(),
+                    e.getSection().getCourse().getCredits(),
+                    e.getSection().getTerm().getYear(),
+                    e.getSection().getTerm().getSemester()));
         }
-
-        return enrollments.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return dlist;
     }
 
     // instructor uploads enrollments with the final grades for the section
