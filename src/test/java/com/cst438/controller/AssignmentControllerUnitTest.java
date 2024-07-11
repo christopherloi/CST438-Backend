@@ -156,6 +156,11 @@ public class AssignmentControllerUnitTest {
         assertEquals("section not found", message);
     }
 
+    @Test
+    public void updateGrades() throws Exception {
+        
+    }
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
