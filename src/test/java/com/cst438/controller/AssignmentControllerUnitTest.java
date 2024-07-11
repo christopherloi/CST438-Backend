@@ -2,8 +2,11 @@ package com.cst438.controller;
 
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentRepository;
+import com.cst438.domain.GradeRepository;
+import com.cst438.domain.Grade;
 import com.cst438.domain.Section;
 import com.cst438.dto.AssignmentDTO;
+import com.cst438.dto.GradeDTO;
 import com.cst438.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,9 +33,10 @@ public class AssignmentControllerUnitTest {
 
     @Autowired
     MockMvc mvc;
-
     @Autowired
     AssignmentRepository assignmentRepository;
+    @Autowired
+    GradeRepository gradeRepository;
 
     @Test
     public void addAssignment() throws Exception {
@@ -158,7 +165,82 @@ public class AssignmentControllerUnitTest {
 
     @Test
     public void updateGrades() throws Exception {
-        
+        MockHttpServletResponse response;
+
+        List<GradeDTO> gradeList = new ArrayList<>();
+        GradeDTO grade1 = new GradeDTO(
+                2,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "db homework 2",
+                "cst363",
+                9,
+                99
+        );
+        gradeList.add(grade1);
+
+        // issue a http POST request to SpringTestServer
+        // specify MediaType for request and response data
+        // convert grades to String data and set as request content
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/grades")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(gradeList)))
+                .andReturn()
+                .getResponse();
+
+        // response should be 200
+        assertEquals(200, response.getStatus());
+
+        // return data converted from String to DTO
+        GradeDTO result = fromJsonString(response.getContentAsString(), GradeDTO.class);
+
+        // primary key should have a non zero value from the database
+        assertNotEquals(0, result.gradeId());
+        // check other fields of the DTO for expected values
+        assertEquals(99, result.score());
+
+        // check the database
+        Grade g = gradeRepository.findById(result.gradeId()).orElse(null);
+        assertNotNull(g);
+        assertEquals(2, g.getGradeId());
+
+        // clean up after test. issue http DELETE request for section
+        GradeDTO gradesReset = new GradeDTO(
+                2,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "db homework 2",
+                "cst363",
+                9,
+                null
+        );
+
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/grades")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(gradesReset)))
+                .andReturn()
+                .getResponse();
+
+        assertEquals(200, response.getStatus());
+
+        // return data converted from String to DTO
+        GradeDTO resultReset = fromJsonString(response.getContentAsString(), GradeDTO.class);
+
+        // primary key should have a non zero value from the database
+        assertNotEquals(0, resultReset.gradeId());
+        // check other fields of the DTO for expected values
+        assertNull(resultReset.score());
+
+        // check the database
+        Grade gReset = gradeRepository.findById(result.gradeId()).orElse(null);
+        assertNotNull(gReset);
+        assertEquals(2, gReset.getGradeId());
     }
 
     private static String asJsonString(final Object obj) {
