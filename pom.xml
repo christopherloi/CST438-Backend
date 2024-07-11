@@ -47,6 +47,7 @@
 			<artifactId>spring-security-crypto</artifactId>
 			<version>3.1.0.RELEASE</version>
 		</dependency>
+		<!-- for selenium -->
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
@@ -56,6 +57,7 @@
 			<artifactId>selenium-api</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- end selenium -->
 
 	</dependencies>
 

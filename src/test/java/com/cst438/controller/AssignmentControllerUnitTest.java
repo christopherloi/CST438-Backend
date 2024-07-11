@@ -123,6 +123,39 @@ public class AssignmentControllerUnitTest {
         assertEquals("Due date is after the end date of the course.", message);
     }
 
+    @Test
+    public void addAssignmentFailsBadSectionNo() throws Exception {
+        MockHttpServletResponse response;
+
+        AssignmentDTO assignment = new AssignmentDTO(
+                0,
+                "db homework 3",
+                "2024-05-16",
+                "cst438",
+                1,
+                11
+        );
+
+        // issue a http POST request to SpringTestServer
+        // specify MediaType for request and response data
+        // convert section to String data and set as request content
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/assignments")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(assignment)))
+                .andReturn()
+                .getResponse();
+
+        // response should be 400, BAD_REQUEST
+        assertEquals(404, response.getStatus());
+
+        // check the expected error message
+        String message = response.getErrorMessage();
+        assertEquals("section not found", message);
+    }
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);

@@ -79,6 +79,10 @@ public class AssignmentController {
         } else if (a.getDueDate().after(s.getTerm().getEndDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
         }
+        if (dto.secNo() > 10) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
+        }
+
         a.setSection(s);
         assignmentRepository.save(a);
 
