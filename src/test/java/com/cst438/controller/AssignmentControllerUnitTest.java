@@ -120,8 +120,7 @@ public class AssignmentControllerUnitTest {
 
         // check the expected error message
         String message = response.getErrorMessage();
-        System.out.println(message);
-//        assertEquals("course not found cst599", message);
+        assertEquals("Due date is after the end date of the course.", message);
     }
 
     private static String asJsonString(final Object obj) {
