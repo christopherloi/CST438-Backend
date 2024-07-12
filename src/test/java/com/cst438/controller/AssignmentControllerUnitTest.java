@@ -169,7 +169,7 @@ public class AssignmentControllerUnitTest {
 
         List<GradeDTO> gradeList = new ArrayList<>();
         GradeDTO grade1 = new GradeDTO(
-                2,
+                1,
                 "thomas edison",
                 "tedison@csumb.edu",
                 "db homework 2",
@@ -194,53 +194,39 @@ public class AssignmentControllerUnitTest {
         // response should be 200
         assertEquals(200, response.getStatus());
 
-        // return data converted from String to DTO
-        GradeDTO result = fromJsonString(response.getContentAsString(), GradeDTO.class);
-
-        // primary key should have a non zero value from the database
-        assertNotEquals(0, result.gradeId());
-        // check other fields of the DTO for expected values
-        assertEquals(99, result.score());
-
         // check the database
-        Grade g = gradeRepository.findById(result.gradeId()).orElse(null);
+        Grade g = gradeRepository.findById(1).orElse(null);
         assertNotNull(g);
-        assertEquals(2, g.getGradeId());
+        assertEquals(99, g.getScore());
 
-        // clean up after test. issue http DELETE request for section
+        // Clean up after test. Reset the grade back to how it was previously.
         GradeDTO gradesReset = new GradeDTO(
-                2,
+                1,
                 "thomas edison",
                 "tedison@csumb.edu",
                 "db homework 2",
                 "cst363",
                 9,
-                null
+                95
         );
+        gradeList.set(0, gradesReset);
 
         response = mvc.perform(
                         MockMvcRequestBuilders
                                 .put("/grades")
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(gradesReset)))
+                                .content(asJsonString(gradeList)))
                 .andReturn()
                 .getResponse();
 
+        // response should be 200
         assertEquals(200, response.getStatus());
 
-        // return data converted from String to DTO
-        GradeDTO resultReset = fromJsonString(response.getContentAsString(), GradeDTO.class);
-
-        // primary key should have a non zero value from the database
-        assertNotEquals(0, resultReset.gradeId());
-        // check other fields of the DTO for expected values
-        assertNull(resultReset.score());
-
         // check the database
-        Grade gReset = gradeRepository.findById(result.gradeId()).orElse(null);
-        assertNotNull(gReset);
-        assertEquals(2, gReset.getGradeId());
+        g = gradeRepository.findById(1).orElse(null);
+        assertNotNull(g);
+        assertEquals(95, g.getScore());
     }
 
     private static String asJsonString(final Object obj) {
