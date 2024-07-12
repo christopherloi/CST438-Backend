@@ -60,38 +60,45 @@ public class AssignmentControllerSystemTest {
     @Test
     public void systemTestAddAssignment() throws Exception {
         // instructor adds a new assignment successfully
-        // verify the section was added
-        // delete the section
-        // verify the section was deleted
+        // verify the assignment was added
+        // delete the assignment
+        // verify the assignment was deleted
 
         // InstructorHome.js
+        // Enter the year and semester
         driver.findElement(By.id("year")).sendKeys("2024");
         driver.findElement(By.id("semester")).sendKeys("Spring");
         driver.findElement(By.id("showsections")).click();
         Thread.sleep(SLEEP_DURATION);
 
         // InstructorSectionsView.js
-        driver.findElement(By.id("assignments")).click();
+        // Locate section 8
+        WebElement row8 = driver.findElement(By.xpath("//tr[td='8']"));
+        // Click the assignments button
+        row8.findElement(By.id("assignments")).click();
         Thread.sleep(SLEEP_DURATION);
 
         // AssignmentsView.js
         List<WebElement> buttons = driver.findElements(By.tagName("button"));
-        buttons.get(6).click();
+        // Click the last button on the page which is "Add Assignments"
+        buttons.get(buttons.size() - 1).click();
         Thread.sleep(SLEEP_DURATION);
 
         // AssignmentAdd.js
+        // Enter the information for the new assignment to be added
         driver.findElement(By.name("title")).sendKeys("Test Assignment");
         driver.findElement(By.name("dueDate")).sendKeys("2024-05-16");
         driver.findElement(By.id("save")).click();
         Thread.sleep(SLEEP_DURATION);
 
         // AssignmentsView.js
+        // Verify the assignment was added by finding the status message
         String message = driver.findElement(By.id("statusMessage")).getText();
         assertTrue(message.startsWith("Assignment created"));
         // Delete the new assignment
         WebElement testAssignment = driver.findElement(By.xpath("//tr[td='Test Assignment']"));
         buttons = testAssignment.findElements(By.tagName("button"));
-        // delete is the second button;
+        // delete is the third button;
         buttons.get(2).click();
         Thread.sleep(SLEEP_DURATION);
         // find the YES to confirm button
@@ -101,5 +108,9 @@ public class AssignmentControllerSystemTest {
         assertEquals(2, confirmButtons.size());
         confirmButtons.get(0).click();
         Thread.sleep(SLEEP_DURATION);
+
+        // verify the deleted assignment is gone
+        assertThrows(NoSuchElementException.class, () ->
+                driver.findElement(By.xpath("//tr[td='Test Assignment']")));
    }
 }
