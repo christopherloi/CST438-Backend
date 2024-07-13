@@ -169,6 +169,26 @@ public class SectionControllerUnitTest {
         assertEquals("Student is already enrolled in this section", errorMessage);
     }
 
+    @Test
+    public void studentEnrollsWithInvalidSectionNumber() throws Exception {
+        // Assuming you have student and section data set up appropriately in your test environment
+        String studentId = "student123";  // Replace with actual student ID
+        int invalidSectionId = 9999;  // Replace with an invalid section ID
+
+        // Perform enrollment request
+        MockHttpServletResponse response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/sections/{secNo}/enroll/{studentId}", invalidSectionId, studentId)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        assertEquals(404, response.getStatus());
+
+        String errorMessage = response.getErrorMessage();
+        assertEquals("Section not found with ID: " + invalidSectionId, errorMessage);
+    }
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
