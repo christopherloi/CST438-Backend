@@ -13,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -227,6 +229,39 @@ public class AssignmentControllerUnitTest {
         g = gradeRepository.findById(1).orElse(null);
         assertNotNull(g);
         assertEquals(95, g.getScore());
+    }
+
+    @Test
+    public void instructorAttemptsToGradeInvalidAssignment() throws Exception {
+        MockHttpServletResponse response;
+
+        // Create a GradeDTO with an invalid assignment ID
+        GradeDTO gradeDTO = new GradeDTO(
+                999, // Invalid assignment ID
+                "Instructor Name",
+                "instructor@example.com",
+                "Assignment Title",
+                "cst438",
+                1,
+                90
+        );
+
+        // Issue a PUT request to /grades endpoint
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/grades")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(Collections.singletonList(gradeDTO)))) // Note: Pass as list to match endpoint signature
+                .andReturn()
+                .getResponse();
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+
+        // Check the expected error message
+        String message = response.getErrorMessage();
+        assertNotNull(message);
+        assertEquals("grade not found 999", message.trim());
     }
 
     private static String asJsonString(final Object obj) {
