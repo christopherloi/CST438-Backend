@@ -145,7 +145,7 @@ public class SectionControllerUnitTest {
         MockHttpServletResponse response;
 
         // Valid section id and student id
-        int sectionId = 10; // Ensure this section ID is valid for Fall 2024
+        int sectionId = 6; // Ensure this section ID is valid for Fall 2024
         int studentId = 3;
 
         // Check if the student is already enrolled
@@ -186,7 +186,6 @@ public class SectionControllerUnitTest {
         Enrollment deletedEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
         assertNull(deletedEnrollment);
     }
-
 
     @Test
     public void studentEnrollsInSectionAlreadyEnrolled() throws Exception {
