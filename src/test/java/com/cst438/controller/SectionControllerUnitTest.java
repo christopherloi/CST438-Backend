@@ -1,7 +1,6 @@
 package com.cst438.controller;
 
-import com.cst438.domain.Section;
-import com.cst438.domain.SectionRepository;
+import com.cst438.domain.*;
 import com.cst438.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.sql.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +30,12 @@ public class SectionControllerUnitTest {
 
     @Autowired
     SectionRepository sectionRepository;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    GradeRepository gradeRepository;
 
     @Test
     public void addSection() throws Exception {
@@ -134,18 +142,51 @@ public class SectionControllerUnitTest {
 
     @Test
     public void studentEnrollsInSection() throws Exception {
-        String studentId = "student123";  // Replace with actual student ID
-        int sectionId = 1234;  // Replace with actual section ID
+        MockHttpServletResponse response;
 
-        MockHttpServletResponse response = mvc.perform(
+        // Valid section id and student id
+        int sectionId = 10; // Ensure this section ID is valid for Fall 2024
+        int studentId = 3;
+
+        // Check if the student is already enrolled
+        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        if (existingEnrollment != null) {
+            // Delete related grades
+            List<Grade> grades = gradeRepository.findByEnrollmentId(existingEnrollment.getEnrollmentId());
+            for (Grade grade : grades) {
+                gradeRepository.delete(grade);
+            }
+
+            // Delete the existing enrollment
+            enrollmentRepository.delete(existingEnrollment);
+        }
+
+        // Enroll the student in the section
+        response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/sections/{sectionNo}/enroll/{studentId}", sectionId, studentId)
-                                .accept(MediaType.APPLICATION_JSON))
+                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
                 .getResponse();
 
+        // Check the response code for 200 meaning OK
         assertEquals(200, response.getStatus());
+
+        // Check the database for the enrollment
+        Enrollment newEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        assertNotNull(newEnrollment);
+
+        // Clean up after test
+        List<Grade> newGrades = gradeRepository.findByEnrollmentId(newEnrollment.getEnrollmentId());
+        for (Grade grade : newGrades) {
+            gradeRepository.delete(grade);
+        }
+        enrollmentRepository.delete(newEnrollment);
+        Enrollment deletedEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        assertNull(deletedEnrollment);
     }
+
 
     @Test
     public void studentEnrollsInSectionAlreadyEnrolled() throws Exception {
