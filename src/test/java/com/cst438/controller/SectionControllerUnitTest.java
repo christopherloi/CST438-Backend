@@ -223,20 +223,27 @@ public class SectionControllerUnitTest {
 
     @Test
     public void studentEnrollsWithInvalidSectionNumber() throws Exception {
-        String studentId = "student123";  // Replace with actual student ID
-        int invalidSectionId = 9999;  // Replace with an invalid section ID
+        MockHttpServletResponse response;
 
-        MockHttpServletResponse response = mvc.perform(
+        // Invalid section id and valid student id
+        int invalidSectionId = 9999; // Replace with an invalid section ID
+        int studentId = 3; // Ensure this student ID is valid
+
+        // Attempt to enroll the student in the invalid section
+        response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/sections/{sectionNo}/enroll/{studentId}", invalidSectionId, studentId)
-                                .accept(MediaType.APPLICATION_JSON))
+                                .post("/enrollments/sections/" + invalidSectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
                 .getResponse();
 
+        // Check the response code for 404 meaning Not Found
         assertEquals(404, response.getStatus());
 
+        // Check the expected error message
         String errorMessage = response.getErrorMessage();
-        assertEquals("Section not found with ID: " + invalidSectionId, errorMessage);
+        assertEquals("section number not found", errorMessage);
     }
 
     private void enrollStudentInSection(int sectionId, int studentId) throws Exception {
