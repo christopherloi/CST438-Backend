@@ -162,16 +162,7 @@ public class SectionControllerUnitTest {
         }
 
         // Enroll the student in the section
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse();
-
-        // Check the response code for 200 meaning OK
-        assertEquals(200, response.getStatus());
+        enrollStudentInSection(sectionId, studentId);
 
         // Check the database for the enrollment
         Enrollment newEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
@@ -189,20 +180,45 @@ public class SectionControllerUnitTest {
 
     @Test
     public void studentEnrollsInSectionAlreadyEnrolled() throws Exception {
-        String studentId = "student123";  // Replace with actual student ID
-        int sectionId = 1234;  // Replace with actual section ID
+        MockHttpServletResponse response;
 
-        MockHttpServletResponse response = mvc.perform(
+        // Valid section id and student id
+        int sectionId = 6; // Ensure this section ID is valid for Fall 2024
+        int studentId = 3;
+
+        // Check if the student is already enrolled
+        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+
+        // Enroll the student if not already enrolled
+        if (existingEnrollment == null) {
+            enrollStudentInSection(sectionId, studentId);
+        }
+
+        // Attempt to enroll the student again
+        response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/sections/{sectionNo}/enroll/{studentId}", sectionId, studentId)
-                                .accept(MediaType.APPLICATION_JSON))
+                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
                 .getResponse();
 
-        assertEquals(404, response.getStatus());
+        // Check the response code for 400 meaning Bad Request
+        assertEquals(400, response.getStatus());
 
+        // Check the expected error message
         String errorMessage = response.getErrorMessage();
-        assertEquals("Student is already enrolled in this section", errorMessage);
+        assertEquals("already enrolled in this section", errorMessage);
+
+        // Clean up after test
+        Enrollment newEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        if (newEnrollment != null) {
+            List<Grade> newGrades = gradeRepository.findByEnrollmentId(newEnrollment.getEnrollmentId());
+            for (Grade grade : newGrades) {
+                gradeRepository.delete(grade);
+            }
+            enrollmentRepository.delete(newEnrollment);
+        }
     }
 
     @Test
@@ -221,6 +237,18 @@ public class SectionControllerUnitTest {
 
         String errorMessage = response.getErrorMessage();
         assertEquals("Section not found with ID: " + invalidSectionId, errorMessage);
+    }
+
+    private void enrollStudentInSection(int sectionId, int studentId) throws Exception {
+        MockHttpServletResponse response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        assertEquals(200, response.getStatus()); // Assuming enrollment is successful
     }
 
     private static String asJsonString(final Object obj) {
