@@ -3,34 +3,28 @@ package com.cst438.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.*;
 
 import java.sql.Date;
-import java.util.List;
 
 @Entity
 public class Term {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="term_id")
     private int termId;
     @Column(name="tyear")
     private int year;
-    @Column(name="semester")
     private String semester;
-    @Column(name="addDate")
+
+    @Column(name="add_date")
     private Date addDate;
-    @Column(name="addDeadline")
+    @Column(name="add_deadline")
     private Date addDeadline;
-    @Column(name="dropDeadline")
+    @Column(name="drop_deadline")
     private Date dropDeadline;
-    @Column(name="startDate")
+    @Column(name="start_date")
     private Date startDate;
-    @Column(name="endDate")
+    @Column(name="end_date")
     private Date endDate;
-    @OneToMany(mappedBy="term")
-    List<Section> sections;
 
     public int getTermId() {
         return termId;
@@ -94,12 +88,5 @@ public class Term {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
-    }
-    public List<Section> getSections() {
-        return sections;
-    }
-
-    public void setSections(List<Section> sections) {
-        this.sections = sections;
     }
 }

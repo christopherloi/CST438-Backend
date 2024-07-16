@@ -2,33 +2,21 @@ package com.cst438.domain;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
 public class Enrollment {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="enrollment_id")
-    private int enrollmentId;
+    int enrollmentId;
+    String grade;
 
     @ManyToOne
     @JoinColumn(name="section_no", nullable=false)
-    private Section section;
+    Section section;
 
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
-    private User student;
-
-    @OneToMany(mappedBy="enrollment")
-    private List<Grade> grades;
-
-    @Column(name="grade")
-    private String finalGrade;
-
-    @Column(name="user_id", insertable=false, updatable=false)
-    private int userId;
-    @Column(name="section_no", insertable=false, updatable=false)
-    private int secNo;
+    User student;
 
     public int getEnrollmentId() {
         return enrollmentId;
@@ -54,27 +42,11 @@ public class Enrollment {
         this.student = student;
     }
 
-    public List<Grade> getGrades() {
-        return grades;
+    public String getGrade() {
+        return grade;
     }
 
-    public void setGrades(List<Grade> grades) {
-        this.grades = grades;
+    public void setGrade(String grade) {
+        this.grade = grade;
     }
-
-    public String getFinalGrade() {
-        return finalGrade;
-    }
-
-    public void setFinalGrade(String finalGrade) {
-        this.finalGrade = finalGrade;
-    }
-
-    public int getUserId() {return userId;}
-
-    public void setUserId(int userId) {this.userId = userId;}
-
-    public int getSecNo() {return secNo;}
-
-    public void setSecNo(int secNo) {this.secNo = secNo;}
 }

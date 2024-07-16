@@ -6,7 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface EnrollmentRepository extends CrudRepository<Enrollment, Integer> {
-
     @Query("select e from Enrollment e where e.section.sectionNo=:sectionNo order by e.student.name")
     List<Enrollment> findEnrollmentsBySectionNoOrderByStudentName(int sectionNo);
 

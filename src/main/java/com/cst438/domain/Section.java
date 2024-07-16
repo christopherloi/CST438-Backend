@@ -3,7 +3,6 @@ package com.cst438.domain;
 import jakarta.persistence.*;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -22,25 +21,11 @@ public class Section {
     private Term term;
     @Column(name="sec_id")
     private int secId;   // sequential numbering of sections of a course in a term:  1, 2, 3, ....
-    @Column(name="building")
     private String building;
-    @Column(name="room")
     private String room;
-    @Column(name="times")
     private String times;
     @Column(name="instructor_email")
     private String instructorEmail;
-    @Column(name="course_id", insertable=false, updatable=false)
-    private String courseId;
-    @Column(name="term_id", insertable=false, updatable=false)
-    private int termId;
-
-//    @Column(name = "add_date")
-//    private LocalDate addDate;
-//
-//    @Column(name = "add_deadline")
-//    private LocalDate addDeadline;
-
 
     @OneToMany(mappedBy="section")
     List<Enrollment> enrollments;
@@ -112,22 +97,9 @@ public class Section {
         this.instructorEmail = instructorEmail;
     }
 
-    public List<Enrollment> getEnrollments() { return enrollments; }
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
 
     public List<Assignment> getAssignments() { return assignments; }
-//    public LocalDate getAddDate() {
-//        return addDate;
-//    }
-//
-//    public void setAddDate(LocalDate addDate) {
-//        this.addDate = addDate;
-//    }
-//
-//    public LocalDate getAddDeadline() {
-//        return addDeadline;
-//    }
-//
-//    public void setAddDeadline(LocalDate addDeadline) {
-//        this.addDeadline = addDeadline;
-//    }
 }

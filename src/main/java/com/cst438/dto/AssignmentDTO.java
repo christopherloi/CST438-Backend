@@ -1,8 +1,6 @@
 package com.cst438.dto;
 
 
-import com.cst438.domain.Section;
-
 /*
  * Data Transfer Object for assignment data
  */
