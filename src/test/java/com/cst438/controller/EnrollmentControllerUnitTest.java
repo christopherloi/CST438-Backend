@@ -23,16 +23,48 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest
-public class InstructorFinalGradeControllerUnitTest {
-
+public class EnrollmentControllerUnitTest {
     @Autowired
     private MockMvc mvc;
 
     @Autowired
-    private EnrollmentRepository enrollmentRepository;
-    @Autowired
-    GradeRepository gradeRepository;
+    private SectionRepository sectionRepository;
 
+    @Autowired
+    private TermRepository termRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+
+    @Test
+    public void enrollPastDeadline() throws Exception {
+        MockHttpServletResponse response;
+
+        int sectionNo = 2; // Ensure this section ID is valid
+        int studentId = 3; // Ensure this student ID is valid
+
+        // Attempt to enroll the student in the section after the deadline
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        // Check the response code for 400 meaning Bad Request
+        assertEquals(400, response.getStatus());
+
+        // Check the expected error message
+        String errorMessage = response.getErrorMessage();
+        assertEquals("cannot enroll in this section due to date", errorMessage);
+    }
 
     @Test
     public void instructorEntersFinalGrades() throws Exception {
@@ -107,6 +139,7 @@ public class InstructorFinalGradeControllerUnitTest {
         }
     }
 
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
@@ -122,4 +155,3 @@ public class InstructorFinalGradeControllerUnitTest {
         }
     }
 }
-
