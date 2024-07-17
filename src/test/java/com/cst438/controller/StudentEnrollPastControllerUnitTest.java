@@ -1,9 +1,8 @@
 package com.cst438.controller;
 
 import com.cst438.domain.*;
-import com.cst438.dto.EnrollmentDTO;
+import com.cst438.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,10 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -41,13 +39,8 @@ public class StudentEnrollPastControllerUnitTest {
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
-    private Section testSection;
-    private User testStudent;
-    private Term testTerm;
-    private Course testCourse;
-    private Enrollment testEnrollment;
 
-    @BeforeEach
+    /*@BeforeEach
     public void setUp() {
         // Create and save a test course
         testCourse = new Course();
@@ -140,6 +133,29 @@ public class StudentEnrollPastControllerUnitTest {
         // Check the expected error message
         String message = response.getErrorMessage();
         assertEquals("Add deadline has passed", message);
+    }*/
+    @Test
+    public void enrollPastDeadline() throws Exception {
+        MockHttpServletResponse response;
+
+        int sectionNo = 2; // Ensure this section ID is valid
+        int studentId = 3; // Ensure this student ID is valid
+
+        // Attempt to enroll the student in the section after the deadline
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        // Check the response code for 400 meaning Bad Request
+        assertEquals(400, response.getStatus());
+
+        // Check the expected error message
+        String errorMessage = response.getErrorMessage();
+        assertEquals("cannot enroll in this section due to date", errorMessage);
     }
 
 
