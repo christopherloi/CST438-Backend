@@ -143,6 +143,7 @@ public class AssignmentControllerSystemTest {
 
         // AssignmentGrade.js
         // Enter the information for the new Grade to be added
+        String originalScore = driver.findElement(By.name("score")).getAttribute("value");
         WebElement scoreInput = driver.findElement(By.name("score"));
         scoreInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
         scoreInput.sendKeys("85");
@@ -161,6 +162,25 @@ public class AssignmentControllerSystemTest {
         // Assuming you have a way to identify the updated score element in the table
         WebElement updatedScore = driver.findElement(By.xpath("//input[@name='score']"));
         assertEquals("85", updatedScore.getAttribute("value"));
+
+        scoreInput = driver.findElement(By.name("score"));
+        scoreInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        scoreInput.sendKeys(originalScore);
+        Thread.sleep(SLEEP_DURATION);
+
+        // Click on the Save button
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // Verify that a PUT request was sent to ${SERVER_URL}/grades (assuming successful request)
+        // Example using Selenium to verify a success message
+        successMessage = driver.findElement(By.xpath("//h4[contains(text(), 'Grades saved')]"));
+        assertTrue(successMessage.isDisplayed());
+
+        // Verify that the updated score is reflected in the UI after saving
+        // Assuming you have a way to identify the updated score element in the table
+        updatedScore = driver.findElement(By.xpath("//input[@name='score']"));
+        assertEquals(originalScore, updatedScore.getAttribute("value"));
 
         // Close the dialog or navigate back to the assignments view
         driver.findElement(By.id("close")).click();
