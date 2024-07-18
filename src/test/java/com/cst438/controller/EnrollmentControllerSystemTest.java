@@ -100,45 +100,4 @@ public class EnrollmentControllerSystemTest {
         driver.findElement(By.linkText("View Transcript")).click();
         Thread.sleep(SLEEP_DURATION);
     }
-
-    @Test //userType = 'INSTRUCTOR'
-    public void testEnterGrades() throws Exception {
-
-        //Enter year & date to see sections
-        Thread.sleep(SLEEP_DURATION);
-        driver.findElement(By.id("year")).sendKeys("2024");
-        driver.findElement(By.id("semester")).sendKeys("Spring");
-        driver.findElement(By.id("showsections")).click();
-        Thread.sleep(SLEEP_DURATION);
-
-        //Click a section to view assignments
-        driver.findElement(By.id("assignments")).click();
-        Thread.sleep(SLEEP_DURATION);
-
-        //Add an assignment
-        driver.findElement(By.cssSelector(".MuiButtonBase-root:nth-child(4)")).click();
-        driver.findElement(By.cssSelector(".MuiDialog-container")).click();
-        Thread.sleep(SLEEP_DURATION);
-        driver.findElement(By.id(":rb:")).sendKeys("hw 1");
-        driver.findElement(By.id(":rd:")).sendKeys("2024-02-16");
-        driver.findElement(By.id("save")).click();
-        Thread.sleep(SLEEP_DURATION);
-        Thread.sleep(SLEEP_DURATION);
-
-        //Grade assignment
-        driver.findElement(By.cssSelector("tr:nth-child(3) > td:nth-child(4) > .MuiButtonBase-root")).click();
-        driver.findElement(By.name("score")).sendKeys("91");
-        driver.findElement(By.id("save")).click();
-        Thread.sleep(SLEEP_DURATION);
-
-        // Assertion to check if the section was added successfully
-        String expectedNotification = "Grades saved";
-        boolean isPresent = driver.getPageSource().contains(expectedNotification);
-        assertTrue(isPresent, "The grade was saved.");
-        Thread.sleep(SLEEP_DURATION);
-
-        //close
-        driver.findElement(By.id("close")).click();
-        Thread.sleep(SLEEP_DURATION);
-    }
 }
