@@ -57,12 +57,8 @@
 			<artifactId>selenium-api</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.2.17.Final</version>
-        </dependency>
-        <!-- end selenium -->
+		<!-- end selenium -->
+
 	</dependencies>
 
 	<build>
