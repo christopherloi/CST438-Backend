@@ -65,9 +65,9 @@ public class EnrollmentController {
             } else {
                 // Check add deadline logic here
                 // Assuming you have access to the term
-                if (e.getSection().getTerm().getAddDeadline().before(new Date(System.currentTimeMillis()))) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Add deadline has passed");
-                }
+//                if (e.getSection().getTerm().getAddDeadline().before(new Date(System.currentTimeMillis()))) {
+//                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Add deadline has passed");
+//                }
                 e.setGrade(d.grade());
                 enrollmentRepository.save(e);
             }
