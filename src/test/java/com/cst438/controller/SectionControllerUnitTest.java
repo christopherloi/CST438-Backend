@@ -1,7 +1,6 @@
 package com.cst438.controller;
 
-import com.cst438.domain.Section;
-import com.cst438.domain.SectionRepository;
+import com.cst438.domain.*;
 import com.cst438.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.sql.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +30,12 @@ public class SectionControllerUnitTest {
 
     @Autowired
     SectionRepository sectionRepository;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    GradeRepository gradeRepository;
 
     @Test
     public void addSection() throws Exception {
@@ -130,6 +138,124 @@ public class SectionControllerUnitTest {
         String message = response.getErrorMessage();
         assertEquals("course not found cst599", message);
 
+    }
+
+    @Test
+    public void studentEnrollsInSection() throws Exception {
+        MockHttpServletResponse response;
+
+        // Valid section id and student id
+        int sectionId = 6; // Ensure this section ID is valid for Fall 2024
+        int studentId = 3;
+
+        // Check if the student is already enrolled
+        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        if (existingEnrollment != null) {
+            // Delete related grades
+            List<Grade> grades = gradeRepository.findByEnrollmentId(existingEnrollment.getEnrollmentId());
+            for (Grade grade : grades) {
+                gradeRepository.delete(grade);
+            }
+
+            // Delete the existing enrollment
+            enrollmentRepository.delete(existingEnrollment);
+        }
+
+        // Enroll the student in the section
+        enrollStudentInSection(sectionId, studentId);
+
+        // Check the database for the enrollment
+        Enrollment newEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        assertNotNull(newEnrollment);
+
+        // Clean up after test
+        List<Grade> newGrades = gradeRepository.findByEnrollmentId(newEnrollment.getEnrollmentId());
+        for (Grade grade : newGrades) {
+            gradeRepository.delete(grade);
+        }
+        enrollmentRepository.delete(newEnrollment);
+        Enrollment deletedEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        assertNull(deletedEnrollment);
+    }
+
+    @Test
+    public void studentEnrollsInSectionAlreadyEnrolled() throws Exception {
+        MockHttpServletResponse response;
+
+        // Valid section id and student id
+        int sectionId = 6; // Ensure this section ID is valid for Fall 2024
+        int studentId = 3;
+
+        // Check if the student is already enrolled
+        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+
+        // Enroll the student if not already enrolled
+        if (existingEnrollment == null) {
+            enrollStudentInSection(sectionId, studentId);
+        }
+
+        // Attempt to enroll the student again
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        // Check the response code for 400 meaning Bad Request
+        assertEquals(400, response.getStatus());
+
+        // Check the expected error message
+        String errorMessage = response.getErrorMessage();
+        assertEquals("already enrolled in this section", errorMessage);
+
+        // Clean up after test
+        Enrollment newEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionId, studentId);
+        if (newEnrollment != null) {
+            List<Grade> newGrades = gradeRepository.findByEnrollmentId(newEnrollment.getEnrollmentId());
+            for (Grade grade : newGrades) {
+                gradeRepository.delete(grade);
+            }
+            enrollmentRepository.delete(newEnrollment);
+        }
+    }
+
+    @Test
+    public void studentEnrollsWithInvalidSectionNumber() throws Exception {
+        MockHttpServletResponse response;
+
+        // Invalid section id and valid student id
+        int invalidSectionId = 9999; // Replace with an invalid section ID
+        int studentId = 3; // Ensure this student ID is valid
+
+        // Attempt to enroll the student in the invalid section
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + invalidSectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        // Check the response code for 404 meaning Not Found
+        assertEquals(404, response.getStatus());
+
+        // Check the expected error message
+        String errorMessage = response.getErrorMessage();
+        assertEquals("section number not found", errorMessage);
+    }
+
+    private void enrollStudentInSection(int sectionId, int studentId) throws Exception {
+        MockHttpServletResponse response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .post("/enrollments/sections/" + sectionId + "?studentId=" + studentId)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        assertEquals(200, response.getStatus()); // Assuming enrollment is successful
     }
 
     private static String asJsonString(final Object obj) {

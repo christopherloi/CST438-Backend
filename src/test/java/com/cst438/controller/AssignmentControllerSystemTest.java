@@ -113,4 +113,79 @@ public class AssignmentControllerSystemTest {
         assertThrows(NoSuchElementException.class, () ->
                 driver.findElement(By.xpath("//tr[td='Test Assignment']")));
    }
+
+    @Test
+    public void systemTestGradeAssignment() throws Exception {
+        // instructor adds a new assignment successfully
+        // verify the assignment was added
+        // delete the assignment
+        // verify the assignment was deleted
+
+        // InstructorHome.js
+        // Enter the year and semester
+        driver.findElement(By.id("year")).sendKeys("2024");
+        driver.findElement(By.id("semester")).sendKeys("Spring");
+        driver.findElement(By.id("showsections")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // InstructorSectionsView.js
+        // Locate section 8
+        WebElement row8 = driver.findElement(By.xpath("//tr[td='8']"));
+        // Click the assignments button
+        row8.findElement(By.id("assignments")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // AssignmentsView.js
+        List<WebElement> buttons = driver.findElements(By.tagName("button"));
+        // Click the first button on the page which is "GRADE"
+        buttons.get(0).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // AssignmentGrade.js
+        // Enter the information for the new Grade to be added
+        String originalScore = driver.findElement(By.name("score")).getAttribute("value");
+        WebElement scoreInput = driver.findElement(By.name("score"));
+        scoreInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        scoreInput.sendKeys("85");
+        Thread.sleep(SLEEP_DURATION);
+
+        // Click on the Save button
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // Verify that a PUT request was sent to ${SERVER_URL}/grades (assuming successful request)
+        // Example using Selenium to verify a success message
+        WebElement successMessage = driver.findElement(By.xpath("//h4[contains(text(), 'Grades saved')]"));
+        assertTrue(successMessage.isDisplayed());
+
+        // Verify that the updated score is reflected in the UI after saving
+        // Assuming you have a way to identify the updated score element in the table
+        WebElement updatedScore = driver.findElement(By.xpath("//input[@name='score']"));
+        assertEquals("85", updatedScore.getAttribute("value"));
+
+        scoreInput = driver.findElement(By.name("score"));
+        scoreInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        scoreInput.sendKeys(originalScore);
+        Thread.sleep(SLEEP_DURATION);
+
+        // Click on the Save button
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // Verify that a PUT request was sent to ${SERVER_URL}/grades (assuming successful request)
+        // Example using Selenium to verify a success message
+        successMessage = driver.findElement(By.xpath("//h4[contains(text(), 'Grades saved')]"));
+        assertTrue(successMessage.isDisplayed());
+
+        // Verify that the updated score is reflected in the UI after saving
+        // Assuming you have a way to identify the updated score element in the table
+        updatedScore = driver.findElement(By.xpath("//input[@name='score']"));
+        assertEquals(originalScore, updatedScore.getAttribute("value"));
+
+        // Close the dialog or navigate back to the assignments view
+        driver.findElement(By.id("close")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+    }
+
 }
