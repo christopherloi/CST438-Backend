@@ -33,6 +33,9 @@ public class AssignmentController {
     @Autowired
     EnrollmentRepository enrollmentRepository;
 
+    @Autowired
+    TermRepository termRepository;
+
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
     @GetMapping("/sections/{secNo}/assignments")
@@ -66,10 +69,20 @@ public class AssignmentController {
         Assignment a = new Assignment();
         a.setTitle(dto.title());
         a.setDueDate(dto.dueDate());
+
         Section s = sectionRepository.findById(dto.secNo()).orElse(null);
         if (s==null) {
             throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section not found");
         }
+        if (a.getDueDate().before(s.getTerm().getStartDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is before the start date of the course.");
+        } else if (a.getDueDate().after(s.getTerm().getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
+        }
+        if (dto.secNo() > 10) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
+        }
+
         a.setSection(s);
         assignmentRepository.save(a);
 
