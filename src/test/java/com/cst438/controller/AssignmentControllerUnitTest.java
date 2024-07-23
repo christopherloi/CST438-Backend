@@ -1,13 +1,7 @@
 package com.cst438.controller;
 
-import com.cst438.domain.Assignment;
-import com.cst438.domain.AssignmentRepository;
-import com.cst438.domain.GradeRepository;
-import com.cst438.domain.Grade;
-import com.cst438.domain.Section;
 import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.GradeDTO;
-import com.cst438.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
