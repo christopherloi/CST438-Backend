@@ -53,9 +53,3 @@ create table enrollment (
     foreign key(section_no) references section(section_no),
     foreign key(user_id) references user_table(id)
 );
-
-create sequence assignment_seq;
-ALTER SEQUENCE assignment_seq RESTART WITH 6000;
-
-create sequence grade_seq;
-ALTER SEQUENCE grade_seq RESTART WITH 12000;
