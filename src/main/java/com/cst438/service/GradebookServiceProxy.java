@@ -30,47 +30,58 @@ public class GradebookServiceProxy {
     RabbitTemplate rabbitTemplate;
 
     public void addCourse(CourseDTO course) {
-        sendMessage("addCourse: " + asJsonString(course));
+        String msg = "addCourse: " + asJsonString(course);
+        sendMessage(msg);
     }
 
     public void updateCourse(CourseDTO course) {
-        sendMessage("updateCourse: " + asJsonString(course));
+        String msg = "updateCourse: " + asJsonString(course);
+        sendMessage(msg);
     }
 
     public void deleteCourse(String courseId) {
-        sendMessage("deleteCourse: " + courseId);
+        String msg = "deleteCourse: " + courseId;
+        sendMessage(msg);
     }
 
     public void addSection(SectionDTO section) {
-        sendMessage("addSection: " + asJsonString(section));
+        String msg = "addSection: " + asJsonString(section);
+        sendMessage(msg);
     }
 
     public void updateSection(SectionDTO section) {
-        sendMessage("updateSection: " + asJsonString(section));
+        String msg = "updateSection: " + asJsonString(section);
+        sendMessage(msg);
     }
 
     public void deleteSection(int sectionNo) {
-        sendMessage("deleteSection: " + sectionNo);
+        String msg = "deleteSection: " + sectionNo;
+        sendMessage(msg);
     }
 
     public void addUser(UserDTO user) {
-        sendMessage("addUSer: " + asJsonString(user));
+        String msg = "addUser: " + asJsonString(user);
+        sendMessage(msg);
     }
 
     public void updateUser(UserDTO user) {
-        sendMessage("updateUser: " + asJsonString(user));
+        String msg = "updateUser: " + asJsonString(user);
+        sendMessage(msg);
     }
 
     public void deleteUser(int userId) {
-        sendMessage("deleteUser: " + userId);
+        String msg = "deleteUser: " + userId;
+        sendMessage(msg);
     }
 
     public void enrollInCourse(EnrollmentDTO enrollment) {
-        sendMessage("enrollInCourse: " + enrollment);
+        String msg = "enrollInCourse: " + enrollment;
+        sendMessage(msg);
     }
 
     public void dropCourse(int enrollmentId) {
-        sendMessage("dropCourse: " + enrollmentId);
+        String msg = "dropCourse: " + enrollmentId;
+        sendMessage(msg);
     }
 
     @RabbitListener(queues = "registrar_service")
