@@ -2,6 +2,7 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
+import com.cst438.service.RegistrarServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,8 @@ public class EnrollmentController {
     @Autowired
     SectionRepository sectionRepository;
 
+    @Autowired
+    RegistrarServiceProxy registrarServiceProxy;
 
     // instructor downloads student enrollments and grades for a section, ordered by student name
     // user must be instructor for the section
@@ -63,13 +66,11 @@ public class EnrollmentController {
             if (e==null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found "+d.enrollmentId());
             } else {
-                // Check add deadline logic here
-                // Assuming you have access to the term
-//                if (e.getSection().getTerm().getAddDeadline().before(new Date(System.currentTimeMillis()))) {
-//                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Add deadline has passed");
-//                }
                 e.setGrade(d.grade());
                 enrollmentRepository.save(e);
+                // Send message to Registrar service
+                String msg = "updateEnrollment " + registrarServiceProxy.asJsonString(d);
+                registrarServiceProxy.sendMessage(msg);
             }
         }
     }

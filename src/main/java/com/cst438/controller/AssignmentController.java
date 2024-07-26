@@ -5,6 +5,7 @@ import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
 import com.cst438.dto.GradeDTO;
 import com.cst438.dto.SectionDTO;
+import com.cst438.service.RegistrarServiceProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class AssignmentController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RegistrarServiceProxy registrarServiceProxy;
 
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
