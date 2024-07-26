@@ -63,14 +63,28 @@ public class EnrollmentController {
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
         for (EnrollmentDTO d : dlist) {
             Enrollment e = enrollmentRepository.findById(d.enrollmentId()).orElse(null);
-            if (e==null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found "+d.enrollmentId());
+            if (e == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found " + d.enrollmentId());
             } else {
                 e.setGrade(d.grade());
                 enrollmentRepository.save(e);
-                // Send message to Registrar service
-                String msg = "updateEnrollment " + registrarServiceProxy.asJsonString(d);
-                registrarServiceProxy.sendMessage(msg);
+
+                // Notify RegistrarServiceProxy about the updated enrollment grade
+                registrarServiceProxy.updateEnrollment(new EnrollmentDTO(
+                        e.getEnrollmentId(),
+                        e.getGrade(),
+                        e.getStudent().getId(),
+                        e.getStudent().getName(),
+                        e.getStudent().getEmail(),
+                        e.getSection().getCourse().getCourseId(),
+                        e.getSection().getSecId(),
+                        e.getSection().getSectionNo(),
+                        e.getSection().getBuilding(),
+                        e.getSection().getRoom(),
+                        e.getSection().getTimes(),
+                        e.getSection().getCourse().getCredits(),
+                        e.getSection().getTerm().getYear(),
+                        e.getSection().getTerm().getSemester()));
             }
         }
     }
