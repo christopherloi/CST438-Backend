@@ -79,20 +79,27 @@ public class AssignmentController {
         a.setDueDate(dto.dueDate());
 
         Section s = sectionRepository.findById(dto.secNo()).orElse(null);
-        if (s==null) {
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section not found");
+        if (s == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "section not found");
         }
         if (a.getDueDate().before(s.getTerm().getStartDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is before the start date of the course.");
         } else if (a.getDueDate().after(s.getTerm().getEndDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
         }
-        if (dto.secNo() > 10) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is after the end date of the course.");
-        }
 
         a.setSection(s);
         assignmentRepository.save(a);
+
+        // Notify RegistrarServiceProxy about the new assignment
+        registrarServiceProxy.addAssignment(new AssignmentDTO(
+                a.getAssignmentId(),
+                a.getTitle(),
+                a.getDueDateAsString(),
+                a.getSection().getCourse().getCourseId(),
+                a.getSection().getSecId(),
+                a.getSection().getSectionNo()
+        ));
 
         return new AssignmentDTO(
                 a.getAssignmentId(),
@@ -110,11 +117,21 @@ public class AssignmentController {
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
         Assignment a = assignmentRepository.findById(dto.id()).orElse(null);
         if (a == null) {
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found");
         }
         a.setTitle(dto.title());
         a.setDueDate(dto.dueDate());
         assignmentRepository.save(a);
+
+        // Notify RegistrarServiceProxy about the updated assignment
+        registrarServiceProxy.updateAssignment(new AssignmentDTO(
+                a.getAssignmentId(),
+                a.getTitle(),
+                a.getDueDateAsString(),
+                a.getSection().getCourse().getCourseId(),
+                a.getSection().getSecId(),
+                a.getSection().getSectionNo()
+        ));
 
         return new AssignmentDTO(
                 a.getAssignmentId(),
@@ -132,6 +149,9 @@ public class AssignmentController {
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
         if (a != null) {
             assignmentRepository.delete(a);
+
+            // Notify RegistrarServiceProxy about the deleted assignment
+            registrarServiceProxy.deleteAssignment(assignmentId);
         }
     }
 
@@ -141,15 +161,14 @@ public class AssignmentController {
     @GetMapping("/assignments/{assignmentId}/grades")
     public List<GradeDTO> getAssignmentGrades(@PathVariable("assignmentId") int assignmentId) {
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
-        if (a==null) {
+        if (a == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found");
         }
         List<GradeDTO> dlist = new ArrayList<>();
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(a.getSection().getSectionNo());
         for (Enrollment e : enrollments) {
             Grade g = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), a.getAssignmentId());
-            if (g==null) {
-                // create a grade with null score.
+            if (g == null) {
                 g = new Grade();
                 g.setAssignment(a);
                 g.setEnrollment(e);
@@ -171,13 +190,23 @@ public class AssignmentController {
     // user must be instructor for the section
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
-        for (GradeDTO g: dlist) {
+        for (GradeDTO g : dlist) {
             Grade grade = gradeRepository.findById(g.gradeId()).orElse(null);
-            if (grade!=null) {
+            if (grade != null) {
                 grade.setScore(g.score());
                 gradeRepository.save(grade);
+
+                // Notify RegistrarServiceProxy about the updated grade
+                registrarServiceProxy.updateGrade(new GradeDTO(
+                        grade.getGradeId(),
+                        grade.getAssignment().getTitle(),
+                        grade.getEnrollment().getStudent().getName(),
+                        grade.getEnrollment().getStudent().getEmail(),
+                        grade.getAssignment().getSection().getCourse().getCourseId(),
+                        grade.getAssignment().getSection().getSecId(),
+                        grade.getScore()));
             } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "grade not found "+ g.gradeId());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "grade not found " + g.gradeId());
             }
         }
     }
