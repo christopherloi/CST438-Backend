@@ -55,6 +55,57 @@ public class EnrollmentControllerSystemTest {
         }
     }
 
+    @Test //userType = 'STUDENT'
+    public void studentEnrollsInSection() throws Exception {
+
+        // navigate to view transcript
+        driver.findElement(By.linkText("View Transcript")).click();
+        Thread.sleep(SLEEP_DURATION);
+        Thread.sleep(SLEEP_DURATION);
+
+        // navigate to Enroll in class
+        driver.findElement(By.linkText("Enroll in a class")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        //Enroll in class
+        driver.findElement(By.cssSelector(".MuiButtonBase-root")).click();
+        Thread.sleep(SLEEP_DURATION);
+        driver.findElement(By.cssSelector(".react-confirm-alert-button-group > button:nth-child(1)")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // Assertion to check if the section was added successfully
+        String expectedCourseNotification = "section added";
+        boolean isCoursePresent = driver.getPageSource().contains(expectedCourseNotification);
+        assertTrue(isCoursePresent, "The course was added to the schedule.");
+
+        // navigate to view transcript to confirm adding class
+        driver.findElement(By.linkText("View Transcript")).click();
+        Thread.sleep(SLEEP_DURATION);
+        Thread.sleep(SLEEP_DURATION);
+
+        //click link to navigate to class schedule
+        driver.findElement(By.linkText("VIew Class Schedule")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // fill in data
+        driver.findElement(By.id("year")).sendKeys("2024");
+        driver.findElement(By.id("semester")).sendKeys("Fall");
+        driver.findElement(By.cssSelector("button")).click();
+        Thread.sleep(SLEEP_DURATION);
+        driver.findElement(By.cssSelector(".MuiButtonBase-root")).click();
+        driver.findElement(By.cssSelector(".react-confirm-alert-button-group > button:nth-child(1)")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // Assertion to check if the section was dropped successfully
+        expectedCourseNotification = "course dropped";
+        isCoursePresent = driver.getPageSource().contains(expectedCourseNotification);
+        assertTrue(isCoursePresent, "The course was added to the schedule.");
+
+        //view transcript to confirm removal
+        driver.findElement(By.linkText("View Transcript")).click();
+        Thread.sleep(SLEEP_DURATION);
+    }
+
     @Test
     public void systemTestFinalGrade() throws Exception {
         // instructor enters final grade for all enrolled students in a section
