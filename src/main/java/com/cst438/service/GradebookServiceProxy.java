@@ -75,7 +75,7 @@ public class GradebookServiceProxy {
     }
 
     public void enrollInCourse(EnrollmentDTO enrollment) {
-        String msg = "enrollInCourse: " + enrollment;
+        String msg = "enrollInCourse: " + asJsonString(enrollment);
         sendMessage(msg);
     }
 
@@ -89,7 +89,7 @@ public class GradebookServiceProxy {
         try {
             System.out.println("Receive from Gradebook: " + message);
             String[] parts = message.split(" ", 2);
-            if (parts[0].equals("updateEnrollment")) {
+            if (parts[0].equals("updateEnrollment:")) {
                 EnrollmentDTO dto = fromJsonString(parts[1], EnrollmentDTO.class);
                 Enrollment e = enrollmentRepository.findById(dto.enrollmentId()).orElse(null);
                 if (e == null) {
