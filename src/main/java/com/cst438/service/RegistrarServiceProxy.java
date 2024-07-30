@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,6 +28,9 @@ public class RegistrarServiceProxy {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TermRepository termRepository;
+
     @Bean
     public Queue createQueue() {
         return new Queue("gradebook_service", true);
@@ -34,6 +38,8 @@ public class RegistrarServiceProxy {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     // Methods to send messages to the Registrar service
     public void addAssignment(AssignmentDTO assignment) {
@@ -64,7 +70,7 @@ public class RegistrarServiceProxy {
     @RabbitListener(queues = "gradebook_service")
     public void receiveFromRegistrar(String message) {
         try {
-            System.out.println("Receive from Gradebook: " + message);
+            System.out.println("Receive from Registrar: " + message);
             String[] parts = message.split(" ", 2);
             String action = parts[0];
 
@@ -99,6 +105,8 @@ public class RegistrarServiceProxy {
                     section.setTimes(sectionDTO.times());
                     section.setInstructor_email(sectionDTO.instructorEmail());
                     section.setCourse(courseRepository.findById(sectionDTO.courseId()).orElse(null));
+                    Term term = termRepository.findByYearAndSemester(sectionDTO.year(), sectionDTO.semester());
+                    section.setTerm(term);
                     sectionRepository.save(section);
                     break;
                 case "updateSection:":
@@ -111,6 +119,8 @@ public class RegistrarServiceProxy {
                         sectionUpdate.setTimes(sectionUpdateDTO.times());
                         sectionUpdate.setInstructor_email(sectionUpdateDTO.instructorEmail());
                         sectionUpdate.setCourse(courseRepository.findById(sectionUpdateDTO.courseId()).orElse(null));
+                        Term termUpdate = termRepository.findByYearAndSemester(sectionUpdateDTO.year(), sectionUpdateDTO.semester());
+                        sectionUpdate.setTerm(termUpdate);
                         sectionRepository.save(sectionUpdate);
                     }
                     break;
@@ -123,6 +133,10 @@ public class RegistrarServiceProxy {
                     user.setId(userDTO.id());
                     user.setName(userDTO.name());
                     user.setEmail(userDTO.email());
+                    String password = userDTO.name()+"2024";
+                    String enc_password = encoder.encode(password);
+                    user.setPassword(enc_password);
+                    user.setType(userDTO.type());
                     userRepository.save(user);
                     break;
                 case "updateUser:":
@@ -131,6 +145,7 @@ public class RegistrarServiceProxy {
                     if (userUpdate != null) {
                         userUpdate.setName(userUpdateDTO.name());
                         userUpdate.setEmail(userUpdateDTO.email());
+                        userUpdate.setType(userUpdateDTO.type());
                         userRepository.save(userUpdate);
                     }
                     break;
@@ -158,7 +173,7 @@ public class RegistrarServiceProxy {
     }
 
     private void sendMessage(String s) {
-        System.out.println("Registrar to Gradebook: " + s);
+        System.out.println("Gradebook to Registrar: " + s);
         rabbitTemplate.convertAndSend(registrarServiceQueue.getName(), s);
     }
 
