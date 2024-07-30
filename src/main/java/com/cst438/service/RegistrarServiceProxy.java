@@ -69,7 +69,7 @@ public class RegistrarServiceProxy {
             String action = parts[0];
 
             switch (action) {
-                case "addCourse":
+                case "addCourse:":
                     CourseDTO courseDTO = fromJsonString(parts[1], CourseDTO.class);
                     Course course = new Course();
                     course.setCourseId(courseDTO.courseId());
@@ -77,7 +77,7 @@ public class RegistrarServiceProxy {
                     course.setCredits(courseDTO.credits());
                     courseRepository.save(course);
                     break;
-                case "updateCourse":
+                case "updateCourse:":
                     CourseDTO courseUpdateDTO = fromJsonString(parts[1], CourseDTO.class);
                     Course courseUpdate = courseRepository.findById(courseUpdateDTO.courseId()).orElse(null);
                     if (courseUpdate != null) {
@@ -86,10 +86,10 @@ public class RegistrarServiceProxy {
                         courseRepository.save(courseUpdate);
                     }
                     break;
-                case "deleteCourse":
+                case "deleteCourse:":
                     courseRepository.deleteById(parts[1]);
                     break;
-                case "addSection":
+                case "addSection:":
                     SectionDTO sectionDTO = fromJsonString(parts[1], SectionDTO.class);
                     Section section = new Section();
                     section.setSectionNo(sectionDTO.secNo());
@@ -101,7 +101,7 @@ public class RegistrarServiceProxy {
                     section.setCourse(courseRepository.findById(sectionDTO.courseId()).orElse(null));
                     sectionRepository.save(section);
                     break;
-                case "updateSection":
+                case "updateSection:":
                     SectionDTO sectionUpdateDTO = fromJsonString(parts[1], SectionDTO.class);
                     Section sectionUpdate = sectionRepository.findById(sectionUpdateDTO.secNo()).orElse(null);
                     if (sectionUpdate != null) {
@@ -114,10 +114,10 @@ public class RegistrarServiceProxy {
                         sectionRepository.save(sectionUpdate);
                     }
                     break;
-                case "deleteSection":
+                case "deleteSection:":
                     sectionRepository.deleteById(Integer.parseInt(parts[1]));
                     break;
-                case "addUser":
+                case "addUser:":
                     UserDTO userDTO = fromJsonString(parts[1], UserDTO.class);
                     User user = new User();
                     user.setId(userDTO.id());
@@ -125,7 +125,7 @@ public class RegistrarServiceProxy {
                     user.setEmail(userDTO.email());
                     userRepository.save(user);
                     break;
-                case "updateUser":
+                case "updateUser:":
                     UserDTO userUpdateDTO = fromJsonString(parts[1], UserDTO.class);
                     User userUpdate = userRepository.findById(userUpdateDTO.id()).orElse(null);
                     if (userUpdate != null) {
@@ -134,10 +134,10 @@ public class RegistrarServiceProxy {
                         userRepository.save(userUpdate);
                     }
                     break;
-                case "deleteUser":
+                case "deleteUser:":
                     userRepository.deleteById(Integer.parseInt(parts[1]));
                     break;
-                case "enrollInCourse":
+                case "enrollInCourse:":
                     EnrollmentDTO enrollmentDTO = fromJsonString(parts[1], EnrollmentDTO.class);
                     Enrollment enrollment = new Enrollment();
                     enrollment.setEnrollmentId(enrollmentDTO.enrollmentId());
@@ -146,7 +146,7 @@ public class RegistrarServiceProxy {
                     enrollment.setGrade(enrollmentDTO.grade());
                     enrollmentRepository.save(enrollment);
                     break;
-                case "dropCourse":
+                case "dropCourse:":
                     enrollmentRepository.deleteById(Integer.parseInt(parts[1]));
                     break;
                 default:
