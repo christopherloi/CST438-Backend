@@ -108,7 +108,7 @@ public class SectionController {
         sectionRepository.save(s);
     }
 
-    // ADMIN function to create a delete section
+    // ADMIN function to delete a section
     // delete will fail there are related assignments or enrollments
     @DeleteMapping("/sections/{sectionno}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
