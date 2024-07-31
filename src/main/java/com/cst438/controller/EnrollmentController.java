@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +30,21 @@ public class EnrollmentController {
     // user must be instructor for the section
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
-            @PathVariable("sectionNo") int sectionNo ) {
+            @PathVariable("sectionNo") int sectionNo,
+            Principal principal) {
+
+        String loggedInInstructorEmail = principal.getName();
+        String sectionInstructorEmail = null;
 
         List<Enrollment> enrollments = enrollmentRepository
                 .findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
         List<EnrollmentDTO> dlist = new ArrayList<>();
         for (Enrollment e : enrollments) {
+            sectionInstructorEmail = e.getSection().getInstructorEmail();
+            if (!loggedInInstructorEmail.equals(sectionInstructorEmail)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unauthorized user.");
+            }
+
             dlist.add(new EnrollmentDTO(
                     e.getEnrollmentId(),
                     e.getGrade(),
@@ -57,7 +67,12 @@ public class EnrollmentController {
     // instructor uploads  final grades for the section
     // user must be instructor for the section
     @PutMapping("/enrollments")
-    public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
+    public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist,
+                                      Principal principal) {
+
+        String loggedInInstructorEmail = principal.getName();
+        String sectionInstructorEmail = null;
+
         for (EnrollmentDTO d : dlist) {
             Enrollment e = enrollmentRepository.findById(d.enrollmentId()).orElse(null);
             if (e==null) {
@@ -68,6 +83,11 @@ public class EnrollmentController {
 //                if (e.getSection().getTerm().getAddDeadline().before(new Date(System.currentTimeMillis()))) {
 //                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Add deadline has passed");
 //                }
+                sectionInstructorEmail = e.getSection().getInstructorEmail();
+                if (!loggedInInstructorEmail.equals(sectionInstructorEmail)) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unauthorized user.");
+                }
+
                 e.setGrade(d.grade());
                 enrollmentRepository.save(e);
             }
