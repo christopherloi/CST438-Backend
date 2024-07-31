@@ -48,6 +48,7 @@ public class UserController {
         user.setEmail(userDTO.email());
         String password = userDTO.name()+"2024";
         String enc_password = encoder.encode(password);
+        System.out.println(enc_password);
         user.setPassword(enc_password);
         user.setType(userDTO.type());
         if (!userDTO.type().equals("STUDENT") &&

@@ -54,6 +54,7 @@ public class AssignmentController {
         for (Assignment a : alist) {
             String sectionInstructorEmail = a.getSection().getInstructorEmail();
             if (loggedInInstructorEmail.equals(sectionInstructorEmail)) {
+                System.out.println("Authorized");
                 dlist.add(new AssignmentDTO(
                         a.getAssignmentId(),
                         a.getTitle(),
