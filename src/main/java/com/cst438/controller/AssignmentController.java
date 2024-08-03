@@ -37,6 +37,9 @@ public class AssignmentController {
     @Autowired
     TermRepository termRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
     @GetMapping("/sections/{secNo}/assignments")
@@ -266,9 +269,17 @@ public class AssignmentController {
     public List<AssignmentStudentDTO> getStudentAssignments(
             @RequestParam("studentId") int studentId,
             @RequestParam("year") int year,
-            @RequestParam("semester") String semester) {
+            @RequestParam("semester") String semester,
+            Principal principal) {
 
         // check that this enrollment is for the logged in user student.
+
+        // Check that the logged-in student is requesting their own assignments
+        String loggedInStudentEmail = principal.getName();
+        User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
+        if (loggedInUser == null || loggedInUser.getId() != studentId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
+        }
 
         List<AssignmentStudentDTO> dlist = new ArrayList<>();
         List<Assignment> alist = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
