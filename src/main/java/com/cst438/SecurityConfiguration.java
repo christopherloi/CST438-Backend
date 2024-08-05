@@ -61,8 +61,7 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-    		HttpSecurity http,
-    		HandlerMappingIntrospector introspector) throws Exception {
+    		HttpSecurity http) throws Exception {
 
     	http
 		    .headers(headers ->
@@ -81,11 +80,12 @@ public class SecurityConfiguration {
 							AntPathRequestMatcher.antMatcher("/index.html"),
 							AntPathRequestMatcher.antMatcher("/manifest.json"),
 							AntPathRequestMatcher.antMatcher("/*.png"),
-							AntPathRequestMatcher.antMatcher("/static/**")
+							AntPathRequestMatcher.antMatcher("/static/**"),
+							AntPathRequestMatcher.antMatcher("/login") // Allow unauthenticated access to login endpoint
 					).permitAll()
 					.anyRequest().authenticated()
 					)
-			.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+			.oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.httpBasic(withDefaults());
           
