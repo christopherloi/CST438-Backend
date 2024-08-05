@@ -10,8 +10,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import java.util.Collections;
 
 @Service
 public class TokenService {
@@ -23,19 +21,9 @@ public class TokenService {
 	}
 	
 	public String generateToken(Authentication authentication) {
-		return generateToken(authentication.getName(), authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" ")));
-
-	}
-	public String generateToken(String email, String userType) {
 		Instant now = Instant.now();
-		// Set up a simple GrantedAuthority list for this example.
 
-		GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userType);
-
-		String scope = Collections.singletonList(authority).stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
-
-		JwtClaimsSet claims = JwtClaimsSet.builder().issuer("self").issuedAt(now).expiresAt(now.plus(1, ChronoUnit.HOURS)).subject(email).claim("scope", scope).build();
-		/*System.out.println("name "+authentication.getName());
+		System.out.println("name "+authentication.getName());
 		for (GrantedAuthority a : authentication.getAuthorities()) {
 			System.out.println("Authority "+a.getAuthority());
 		}
@@ -50,7 +38,7 @@ public class TokenService {
 		 .expiresAt(now.plus(1, ChronoUnit.HOURS))
 		 .subject(authentication.getName())
 		 .claim("scope", scope)
-		 .build();*/
+		 .build();
 		return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 	}
 }
