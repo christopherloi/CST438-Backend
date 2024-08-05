@@ -267,7 +267,6 @@ public class AssignmentController {
     // student must be enrolled in the section
     @GetMapping("/assignments")
     public List<AssignmentStudentDTO> getStudentAssignments(
-            @RequestParam("studentId") int studentId,
             @RequestParam("year") int year,
             @RequestParam("semester") String semester,
             Principal principal) {
@@ -276,10 +275,17 @@ public class AssignmentController {
 
         // Check that the logged-in student is requesting their own assignments
         String loggedInStudentEmail = principal.getName();
+        String sectionStudentEmail = null;
         User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
-        if (loggedInUser == null || loggedInUser.getId() != studentId) {
+        if (loggedInUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student not found: " + loggedInStudentEmail);
+        }
+        sectionStudentEmail = loggedInUser.getEmail();
+        if (!loggedInStudentEmail.equals(sectionStudentEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
         }
+
+        int studentId = loggedInUser.getId();
 
         List<AssignmentStudentDTO> dlist = new ArrayList<>();
         List<Assignment> alist = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
@@ -293,8 +299,6 @@ public class AssignmentController {
             // if assignment has been graded, include the score
             Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId( e.getEnrollmentId(), a.getAssignmentId());
 
-            System.out.println(grade);
-
             dlist.add(new AssignmentStudentDTO(
                     a.getAssignmentId(),
                     a.getTitle(),
@@ -302,7 +306,6 @@ public class AssignmentController {
                     a.getSection().getCourse().getCourseId(),
                     a.getSection().getSecId(),
                     (grade!=null)? grade.getScore(): null ));
-
         }
         return dlist;
     }

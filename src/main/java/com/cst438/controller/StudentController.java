@@ -35,21 +35,29 @@ public class StudentController {
     @GetMapping("/transcripts")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public List<EnrollmentDTO> getTranscript(Principal principal) {
+        // Check that the logged-in student is requesting their own assignments
         String loggedInStudentEmail = principal.getName();
-        User student = userRepository.findByEmail(loggedInStudentEmail);
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        String sectionStudentEmail = null;
+        User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
+        if (loggedInUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student not found: " + loggedInStudentEmail);
+        }
+        sectionStudentEmail = loggedInUser.getEmail();
+        if (!loggedInStudentEmail.equals(sectionStudentEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
         }
 
-        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(student.getId());
+        int studentId = loggedInUser.getId();
+
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
         List<EnrollmentDTO> dlist = new ArrayList<>();
         for (Enrollment e : enrollments) {
             dlist.add(new EnrollmentDTO(
                     e.getEnrollmentId(),
                     e.getGrade(),
-                    student.getId(),
-                    student.getName(),
-                    student.getEmail(),
+                    studentId,
+                    loggedInUser.getName(),
+                    loggedInUser.getEmail(),
                     e.getSection().getCourse().getCourseId(),
                     e.getSection().getSecId(),
                     e.getSection().getSectionNo(),
@@ -73,20 +81,27 @@ public class StudentController {
             Principal principal) {
 
         String loggedInStudentEmail = principal.getName();
-        User student = userRepository.findByEmail(loggedInStudentEmail);
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        String sectionStudentEmail = null;
+        User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
+        if (loggedInUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student not found: " + loggedInStudentEmail);
+        }
+        sectionStudentEmail = loggedInUser.getEmail();
+        if (!loggedInStudentEmail.equals(sectionStudentEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
         }
 
-        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, student.getId());
+        int studentId = loggedInUser.getId();
+
+        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
         List<EnrollmentDTO> dlist = new ArrayList<>();
         for (Enrollment e : enrollments) {
             dlist.add(new EnrollmentDTO(
                     e.getEnrollmentId(),
                     e.getGrade(),
-                    student.getId(),
-                    student.getName(),
-                    student.getEmail(),
+                    studentId,
+                    loggedInUser.getName(),
+                    loggedInUser.getEmail(),
                     e.getSection().getCourse().getCourseId(),
                     e.getSection().getSecId(),
                     e.getSection().getSectionNo(),
@@ -109,12 +124,19 @@ public class StudentController {
             Principal principal) {
 
         String loggedInStudentEmail = principal.getName();
-        User student = userRepository.findByEmail(loggedInStudentEmail);
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        String sectionStudentEmail = null;
+        User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
+        if (loggedInUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student not found: " + loggedInStudentEmail);
+        }
+        sectionStudentEmail = loggedInUser.getEmail();
+        if (!loggedInStudentEmail.equals(sectionStudentEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
         }
 
-        Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, student.getId());
+        int studentId = loggedInUser.getId();
+
+        Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId);
         if (e != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already enrolled in this section");
         }
@@ -130,15 +152,15 @@ public class StudentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot enroll in this section due to date restrictions");
         }
 
-        e.setStudent(student);
+        e.setStudent(loggedInUser);
         e.setSection(section);
         enrollmentRepository.save(e);
         return new EnrollmentDTO(
                 e.getEnrollmentId(),
                 e.getGrade(),
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
+                studentId,
+                loggedInUser.getName(),
+                loggedInUser.getEmail(),
                 e.getSection().getCourse().getCourseId(),
                 e.getSection().getSecId(),
                 e.getSection().getSectionNo(),
@@ -155,15 +177,25 @@ public class StudentController {
     @DeleteMapping("/enrollments/{enrollmentId}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public void dropCourse(@PathVariable("enrollmentId") int enrollmentId, Principal principal) {
+
         String loggedInStudentEmail = principal.getName();
-        User student = userRepository.findByEmail(loggedInStudentEmail);
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        String sectionStudentEmail = null;
+        User loggedInUser = userRepository.findByEmail(loggedInStudentEmail);
+        if (loggedInUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student not found: " + loggedInStudentEmail);
+        }
+        sectionStudentEmail = loggedInUser.getEmail();
+        if (!loggedInStudentEmail.equals(sectionStudentEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized user.");
         }
 
+        int studentId = loggedInUser.getId();
+
         Enrollment e = enrollmentRepository.findById(enrollmentId).orElse(null);
-        if (e == null || e.getStudent().getId() != student.getId()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found or unauthorized");
+        if (e == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found");
+        } else if (e.getStudent().getId() != studentId) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not unauthorized");
         }
 
         Date now = new Date();
